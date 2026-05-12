@@ -1,0 +1,120 @@
+/* ===== APP LAYOUT ===== */
+
+.app-header {
+  text-align: center;
+  padding: 48px 0 24px;
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-icon {
+  font-size: 2.4rem;
+}
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 2.8rem;
+  font-weight: 800;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -1px;
+}
+
+.tagline {
+  margin-top: 8px;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  font-weight: 400;
+}
+
+/* ===== STEPS NAV ===== */
+.steps-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 24px 0;
+  margin-bottom: 8px;
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.step-dot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 2px solid var(--border-subtle);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  flex-shrink: 0;
+}
+
+.step-item.active .step-dot {
+  background: var(--accent-gradient);
+  border-color: var(--accent-primary);
+  color: #fff;
+  box-shadow: 0 0 20px var(--accent-primary-glow);
+}
+
+.step-item.completed .step-dot {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color 0.3s;
+  white-space: nowrap;
+}
+.step-item.active .step-label {
+  color: var(--text-primary);
+}
+.step-item.completed .step-label {
+  color: var(--success);
+}
+
+.step-connector {
+  width: 60px;
+  height: 2px;
+  background: var(--border-subtle);
+  margin: 0 12px;
+  transition: background 0.3s;
+}
+
+.step-item.completed .step-connector {
+  background: var(--success);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  margin-bottom: 40px;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ===== FOOTER ===== */
+.app-footer {
+  text-align: center;
+  padding: 24px 0 48px;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}

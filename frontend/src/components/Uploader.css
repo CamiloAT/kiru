@@ -1,0 +1,134 @@
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+/* Dropzone */
+.dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.dropzone:hover, .dropzone.active {
+  border-color: var(--accent-primary);
+  background: var(--accent-gradient-subtle);
+  box-shadow: var(--shadow-glow);
+}
+
+.dropzone-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 40px;
+}
+.dropzone-icon {
+  font-size: 3rem;
+}
+.dropzone-text {
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+.dropzone-hint {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+/* Image Editor */
+.image-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.image-preview-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  min-height: 300px;
+  overflow: hidden;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+  border-radius: var(--radius-sm);
+  transition: filter 0.3s, transform 0.3s;
+}
+
+.image-controls {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.control-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+.control-group input[type="range"] {
+  width: 100%;
+  accent-color: var(--accent-primary);
+  height: 6px;
+  cursor: pointer;
+}
+.control-value {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-align: right;
+}
+
+.change-image-btn {
+  align-self: center;
+  padding: 10px 24px;
+  font-size: 0.9rem;
+}
+
+/* Error */
+.error-message {
+  padding: 14px 20px;
+  background: rgba(255, 92, 117, 0.1);
+  border: 1px solid rgba(255, 92, 117, 0.3);
+  border-radius: var(--radius-md);
+  color: var(--error);
+  font-size: 0.95rem;
+  overflow: hidden;
+}
+
+/* Spinner */
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
