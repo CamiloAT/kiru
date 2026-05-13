@@ -43,76 +43,107 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
     """
     h, w = binary.shape
 
-    # Detectar líneas horizontales y verticales
-    horizontal_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (w // (expected_cols + 2), 1))
-    vertical_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (1, h // (expected_rows + 2)))
+    # Encontrar contornos directamente sobre la imagen binaria (las cajas son desconectadas)
+    contours, _ = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-    horizontal_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, horizontal_kernel, iterations=2)
-    vertical_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, vertical_kernel, iterations=2)
+    # Filtrar contornos que sean celdas cuadradas razonables
+    min_cell_size = w // (expected_cols * 2)
+    max_cell_size = int((w / expected_cols) * 1.5)
 
-    # Combinar líneas para obtener la cuadrícula
-    grid = cv2.add(horizontal_lines, vertical_lines)
-
-    # Encontrar contornos de las celdas
-    contours, _ = cv2.findContours(grid, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-
-    # Filtrar contornos que sean celdas razonables
-    min_cell_w = w // (expected_cols * 3)
-    max_cell_w = w // max(expected_cols // 2, 1)
-    min_cell_h = h // (expected_rows * 3)
-    max_cell_h = h // max(expected_rows // 2, 1)
-
-    cells = []
+    raw_cells = []
     for cnt in contours:
         x, y, cw, ch = cv2.boundingRect(cnt)
-        if min_cell_w < cw < max_cell_w and min_cell_h < ch < max_cell_h:
-            cells.append((x, y, cw, ch))
+        if min_cell_size < cw < max_cell_size and min_cell_size < ch < max_cell_size:
+            aspect = cw / ch
+            if 0.7 < aspect < 1.3:
+                raw_cells.append((x, y, cw, ch))
 
-    # Ordenar: primero por Y (filas), luego por X (columnas)
-    cells.sort(key=lambda c: (c[1] // (h // (expected_rows + 1)), c[0]))
+    # Filtrar celdas superpuestas (el borde interno y externo de la misma caja)
+    cells = []
+    for rc in raw_cells:
+        rx, ry, rw, rh = rc
+        overlap = False
+        for c in cells:
+            cx, cy, cw, ch = c
+            ix = max(rx, cx)
+            iy = max(ry, cy)
+            iw = min(rx+rw, cx+cw) - ix
+            ih = min(ry+rh, cy+ch) - iy
+            if iw > 0 and ih > 0:
+                if (iw * ih) > 0.5 * (rw * rh):
+                    overlap = True
+                    break
+        if not overlap:
+            cells.append(rc)
 
-    return cells
+    # Ordenar celdas de forma robusta por filas y columnas
+    # 1. Ordenar por Y
+    cells.sort(key=lambda c: c[1])
+
+    rows_list = []
+    current_row = []
+    
+    if cells:
+        last_y = cells[0][1]
+        # Tolerancia para considerar que una celda está en la misma fila
+        row_tolerance = max(10, (h // expected_rows) // 3)
+
+        for c in cells:
+            if abs(c[1] - last_y) > row_tolerance:
+                # Nueva fila
+                current_row.sort(key=lambda x: x[0])
+                rows_list.extend(current_row)
+                current_row = [c]
+                last_y = c[1]
+            else:
+                current_row.append(c)
+
+        if current_row:
+            current_row.sort(key=lambda x: x[0])
+            rows_list.extend(current_row)
+
+    return rows_list
 
 
-def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int], padding: int = 8) -> np.ndarray:
+def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int]) -> np.ndarray:
     """
-    Extrae el contenido de una celda, recortando el espacio vacío alrededor del carácter.
-    Retorna una imagen cuadrada del glifo normalizada.
+    Extrae el contenido de una celda conservando su altura total pero ajustando el ancho a la tinta.
+    Esto permite mantener el "baseline" natural y el ancho proporcional (ej: 'i' vs 'w').
     """
     x, y, w, h = cell
-    # Recortar la celda con un pequeño margen interior para evitar los bordes de la cuadrícula
-    margin = max(w, h) // 10
+    margin = 3
+    
+    # Recortamos ligeramente los bordes para evitar ruido de la grilla (3 píxeles)
     cell_img = binary[y + margin:y + h - margin, x + margin:x + w - margin]
 
     if cell_img.size == 0:
-        return np.zeros((256, 256), dtype=np.uint8)
+        return np.zeros((256, 20), dtype=np.uint8)
 
-    # Encontrar el bounding box del contenido real (la tinta)
     coords = cv2.findNonZero(cell_img)
     if coords is None:
-        return np.zeros((256, 256), dtype=np.uint8)
+        return np.zeros((256, 20), dtype=np.uint8)
 
     bx, by, bw, bh = cv2.boundingRect(coords)
-    glyph = cell_img[by:by + bh, bx:bx + bw]
 
-    # Normalizar a un tamaño cuadrado estándar (256x256) con padding
-    target_size = 256 - 2 * padding
-    if bw > bh:
-        scale = target_size / bw
-    else:
-        scale = target_size / bh
+    # Padding horizontal ligero para que la letra no toque exactamente el borde
+    h_pad = max(1, w // 20)
+    start_x = max(0, bx - h_pad)
+    end_x = min(cell_img.shape[1], bx + bw + h_pad)
 
-    new_w = int(bw * scale)
-    new_h = int(bh * scale)
-    glyph_resized = cv2.resize(glyph, (new_w, new_h), interpolation=cv2.INTER_AREA)
+    # Recortar solo horizontalmente (mantener altura completa de la celda)
+    glyph_col = cell_img[:, start_x:end_x]
 
-    # Centrar en canvas cuadrado
-    canvas = np.zeros((256, 256), dtype=np.uint8)
-    ox = (256 - new_w) // 2
-    oy = (256 - new_h) // 2
-    canvas[oy:oy + new_h, ox:ox + new_w] = glyph_resized
+    if glyph_col.size == 0 or glyph_col.shape[1] == 0:
+        return np.zeros((256, 20), dtype=np.uint8)
 
-    return canvas
+    # Redimensionar para que la altura sea exactamente 256, ancho proporcional
+    target_h = 256
+    scale = target_h / glyph_col.shape[0]
+    target_w = max(1, int(glyph_col.shape[1] * scale))
+
+    glyph_resized = cv2.resize(glyph_col, (target_w, target_h), interpolation=cv2.INTER_AREA)
+
+    return glyph_resized
 
 
 def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[str, np.ndarray]:

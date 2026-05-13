@@ -78,23 +78,18 @@ export default function TemplateGenerator() {
       const row = Math.floor(i / cols);
       const x = gridStartX + col * cellSize;
       const y = gridStartY + row * cellSize;
+      const boxSize = cellSize * 0.8;
+      const padding = cellSize * 0.2;
+      const boxX = x + padding / 2;
+      const boxY = y + padding;
 
       // Cell border
-      doc.rect(x, y, cellSize, cellSize);
+      doc.rect(boxX, boxY, boxSize, boxSize);
 
-      // Character label (small, top-left of cell)
-      doc.setFontSize(7);
-      doc.setTextColor(160);
-      doc.text(chars[i], x + 1.5, y + 4);
-      doc.setTextColor(0);
-
-      // Baseline guide (dotted line at 75% of cell height)
-      const baseY = y + cellSize * 0.75;
-      doc.setDrawColor(220);
-      doc.setLineDashPattern([1, 1], 0);
-      doc.line(x + 2, baseY, x + cellSize - 2, baseY);
-      doc.setLineDashPattern([], 0);
-      doc.setDrawColor(180);
+      // Character label (small, above cell)
+      doc.setFontSize(8);
+      doc.setTextColor(100);
+      doc.text(chars[i], boxX, boxY - 0.8);
     }
 
     // Registration marks (corner squares for alignment)
@@ -165,26 +160,19 @@ export default function TemplateGenerator() {
         const row = Math.floor(i / cols);
         const x = gridStartX + col * cellSize;
         const y = gridStartY + row * cellSize;
+        const boxSize = cellSize * 0.8;
+        const padding = cellSize * 0.2;
+        const boxX = x + padding / 2;
+        const boxY = y + padding;
 
         // Cell border
-        ctx.strokeRect(x, y, cellSize, cellSize);
+        ctx.strokeRect(boxX, boxY, boxSize, boxSize);
 
-        // Character label
+        // Character label (above the box)
         ctx.font = '24px Helvetica, Arial, sans-serif';
-        ctx.fillStyle = '#a0a0a0';
+        ctx.fillStyle = '#646464';
         ctx.textAlign = 'left';
-        ctx.fillText(chars[i], x + mmToPx(1.5), y + mmToPx(4) + 18);
-
-        // Baseline guide
-        const baseY = y + cellSize * 0.75;
-        ctx.strokeStyle = '#dcdcdc';
-        ctx.setLineDash([mmToPx(1), mmToPx(1)]);
-        ctx.beginPath();
-        ctx.moveTo(x + mmToPx(2), baseY);
-        ctx.lineTo(x + cellSize - mmToPx(2), baseY);
-        ctx.stroke();
-        ctx.setLineDash([]);
-        ctx.strokeStyle = '#b4b4b4';
+        ctx.fillText(chars[i], boxX, boxY - mmToPx(0.8));
       }
 
       // Registration marks

@@ -1,4 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 import useAppStore from './store/useAppStore';
 import TemplateGenerator from './components/TemplateGenerator';
 import Uploader from './components/Uploader';
@@ -13,7 +15,29 @@ const STEP_LABELS = {
 };
 
 function App() {
-  const { step } = useAppStore();
+  const { step, setStep } = useAppStore();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Sync URL to store
+  useEffect(() => {
+    const path = location.pathname.replace('/', '');
+    if (STEPS.includes(path)) {
+      if (path !== step) {
+        setStep(path);
+      }
+    } else {
+      navigate('/template', { replace: true });
+    }
+  }, [location.pathname]);
+
+  // Sync store to URL
+  useEffect(() => {
+    const expectedPath = `/${step}`;
+    if (location.pathname !== expectedPath) {
+      navigate(expectedPath);
+    }
+  }, [step, navigate]);
 
   return (
     <>
@@ -37,7 +61,12 @@ function App() {
         {/* Progress Steps */}
         <nav className="steps-nav">
           {STEPS.map((s, i) => (
-            <div key={s} className={`step-item ${step === s ? 'active' : ''} ${STEPS.indexOf(step) > i ? 'completed' : ''}`}>
+            <div 
+              key={s} 
+              className={`step-item ${step === s ? 'active' : ''} ${STEPS.indexOf(step) > i ? 'completed' : ''}`}
+              onClick={() => setStep(s)}
+              style={{ cursor: 'pointer' }}
+            >
               <div className="step-dot">
                 {STEPS.indexOf(step) > i ? '✓' : i + 1}
               </div>

@@ -7,6 +7,7 @@ extraídos de la escritura del usuario.
 
 from fontTools.fontBuilder import FontBuilder
 from fontTools.ttLib import TTFont
+from fontTools.pens.ttGlyphPen import TTGlyphPen
 from typing import Dict
 import io
 
@@ -71,12 +72,6 @@ def build_font(
     fb.setupCharacterMap(cmap)
 
     # Definir los contornos de cada glifo
-    glyph_table = {}
-
-    # .notdef — rectángulo vacío
-    notdef_pen = fb.setupGlyf({})  # Se configura después
-    pen = glyph_table
-
     # Construir las tablas glyf usando un dict de drawings
     drawings = {}
 
@@ -97,8 +92,8 @@ def build_font(
         name = char_to_name[char]
         drawings[name] = glyph_data
 
-    # Dibujar todos los glifos
-    draw_funcs = {}
+    # Dibujar todos los glifos usando TTGlyphPen
+    glyphs = {}
     advance_widths = {}
 
     for glyph_name in glyph_names:
@@ -108,20 +103,18 @@ def build_font(
 
         advance_widths[glyph_name] = (adv_w, 0)
 
-        def make_draw_func(gn_contours):
-            def draw(pen):
-                for contour in gn_contours:
-                    if len(contour) < 3:
-                        continue
-                    pen.moveTo(contour[0])
-                    for point in contour[1:]:
-                        pen.lineTo(point)
-                    pen.closePath()
-            return draw
+        pen = TTGlyphPen(None)
+        for contour in contours:
+            if len(contour) < 3:
+                continue
+            pen.moveTo(contour[0])
+            for point in contour[1:]:
+                pen.lineTo(point)
+            pen.closePath()
+            
+        glyphs[glyph_name] = pen.glyph()
 
-        draw_funcs[glyph_name] = make_draw_func(contours)
-
-    fb.setupGlyf(draw_funcs)
+    fb.setupGlyf(glyphs)
     fb.setupHorizontalMetrics(advance_widths)
 
     # Métricas de la fuente
@@ -130,7 +123,7 @@ def build_font(
         "familyName": family_name,
         "styleName": "Regular",
     })
-    fb.setupOs2(
+    fb.setupOS2(
         sTypoAscender=ascent,
         sTypoDescender=descent,
         sTypoLineGap=0,

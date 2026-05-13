@@ -40,11 +40,6 @@ def bitmap_to_contours(glyph_img: np.ndarray) -> List[List[Tuple[int, int]]]:
 
         points = [(int(p[0][0]), int(p[0][1])) for p in approx]
         if len(points) >= 3:
-            # Determinar si es contorno exterior o interior (hueco)
-            is_hole = hierarchy[0][i][3] != -1
-            if is_hole:
-                # Los huecos van en sentido contrario
-                points.reverse()
             result.append(points)
 
     return result
@@ -74,8 +69,9 @@ def contours_to_glyph_data(
     contours: List[List[Tuple[int, int]]],
     canvas_size: int = 256,
     em_size: int = 1000,
-    baseline_ratio: float = 0.75,
-    smooth: bool = True
+    baseline_ratio: float = 0.8,
+    smooth: bool = True,
+    is_descender: bool = False
 ) -> Dict:
     """
     Convierte contornos de píxeles a coordenadas de fuente (unidades EM).
@@ -90,6 +86,9 @@ def contours_to_glyph_data(
     scale = em_size / canvas_size
     baseline_y = int(canvas_size * baseline_ratio)
 
+    # Shift descenders down by 15% of the cell height
+    y_shift = int(canvas_size * 0.15) if is_descender else 0
+
     converted_contours = []
     for contour in contours:
         if smooth:
@@ -97,6 +96,7 @@ def contours_to_glyph_data(
 
         font_points = []
         for px, py in contour:
+            py += y_shift
             # Escalar a unidades EM e invertir Y
             fx = px * scale
             fy = (baseline_y - py) * scale  # Invertir Y y ajustar baseline
@@ -126,9 +126,12 @@ def vectorize_glyphs(
     Pipeline completo: recibe dict de {char: imagen} y retorna {char: glyph_data}.
     """
     vectorized = {}
+    descenders = {'g', 'j', 'p', 'q', 'y'}
+
     for char, glyph_img in glyphs.items():
         contours = bitmap_to_contours(glyph_img)
-        glyph_data = contours_to_glyph_data(contours, smooth=smooth)
+        is_descender = char in descenders
+        glyph_data = contours_to_glyph_data(contours, smooth=smooth, is_descender=is_descender)
         vectorized[char] = glyph_data
 
     return vectorized

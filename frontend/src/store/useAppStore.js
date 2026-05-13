@@ -1,8 +1,13 @@
 import { create } from 'zustand';
 
+const getInitialStep = () => {
+  const path = window.location.pathname.replace('/', '');
+  return ['template', 'upload', 'sandbox'].includes(path) ? path : 'template';
+};
+
 const useAppStore = create((set) => ({
   // Current step in the flow
-  step: 'template', // 'template' | 'upload' | 'sandbox'
+  step: getInitialStep(), // 'template' | 'upload' | 'sandbox'
 
   // Font data
   fontBytes: null,   // ArrayBuffer of the generated TTF
