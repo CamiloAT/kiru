@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Sun, Contrast, RotateCw, RefreshCcw, AlertCircle, Wand2, ArrowLeft } from 'lucide-react';
+import { Camera, Sun, Contrast, RotateCw, RefreshCcw, AlertCircle, Wand2, ArrowLeft, RotateCcw } from 'lucide-react'; 
 import useAppStore from '../../store/useAppStore';
 import './Uploader.css';
 
@@ -138,14 +138,23 @@ export default function Uploader() {
             </div>
           </div>
 
-          {/* Change Image Button */}
-          <button
-            className="btn-secondary change-image-btn"
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
-            onClick={() => { setUploadedImage(null); }}
-          >
-            <RefreshCcw size={16} /> Cambiar imagen
-          </button>
+          {/* Buttons container */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)', gap: '10px', marginTop: '16px' }}>
+            <button
+              className="btn-secondary change-image-btn"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}        
+              onClick={() => { setUploadedImage(null); }}
+            >
+              <RefreshCcw size={16} /> Cambiar imagen
+            </button>
+            <button
+              className="btn-secondary"
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}        
+              onClick={() => { setBrightness(100); setContrast(100); setRotation(0); }}
+            >
+              <RotateCcw size={16} /> Predeterminados
+            </button>
+          </div>
         </div>
       )}
 
