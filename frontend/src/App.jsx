@@ -3,9 +3,9 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { PenTool, Heart } from 'lucide-react';
 import useAppStore from './store/useAppStore';
-import TemplateGenerator from './components/TemplateGenerator';
-import Uploader from './components/Uploader';
-import Sandbox from './components/Sandbox';
+import TemplateGenerator from './components/TemplateGenerator/TemplateGenerator';
+import Uploader from './components/Uploader/Uploader';
+import Sandbox from './components/Sandbox/Sandbox';
 import './App.css';
 
 const STEPS = ['template', 'upload', 'sandbox'];
