@@ -53,7 +53,7 @@ def build_font(
     """
     em_size = 1000
     ascent = 800
-    descent = -200
+    descent = -400
 
     # Preparar la lista de glifos y el mapeo cmap
     glyph_names = [".notdef", "space"]
@@ -72,16 +72,15 @@ def build_font(
     fb.setupCharacterMap(cmap)
 
     # Definir los contornos de cada glifo
-    # Construir las tablas glyf usando un dict de drawings
     drawings = {}
 
-    # .notdef glyph: un rectángulo simple
+    # .notdef glyph
     drawings[".notdef"] = {
         "contours": [[(0, 0), (500, 0), (500, 700), (0, 700)]],
         "advance_width": 500
     }
 
-    # space glyph: vacío
+    # space glyph
     drawings["space"] = {
         "contours": [],
         "advance_width": int(em_size * 0.3)
@@ -117,11 +116,20 @@ def build_font(
     fb.setupGlyf(glyphs)
     fb.setupHorizontalMetrics(advance_widths)
 
+    import re
+    safe_ps_name = re.sub(r'[^A-Za-z0-9-]', '', font_name)
+    if not safe_ps_name:
+        safe_ps_name = "KiruFont"
+
     # Métricas de la fuente
     fb.setupHorizontalHeader(ascent=ascent, descent=descent)
     fb.setupNameTable({
         "familyName": family_name,
         "styleName": "Regular",
+        "uniqueFontIdentifier": f"Kiru:{safe_ps_name}:2026",
+        "fullName": f"{family_name} Regular",
+        "version": "Version 1.000",
+        "psName": safe_ps_name,
     })
     fb.setupOS2(
         sTypoAscender=ascent,
@@ -129,8 +137,12 @@ def build_font(
         sTypoLineGap=0,
         usWinAscent=ascent,
         usWinDescent=abs(descent),
+        fsSelection=64, # Bit 6: Regular
+        achVendID="KIRU",
+        ulCodePageRange1=1, # Bit 0: Latin 1
     )
     fb.setupPost()
+    fb.setupDummyDSIG()
 
     # Exportar a bytes
     font = fb.font

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { PenTool, Heart } from 'lucide-react';
 import useAppStore from './store/useAppStore';
 import TemplateGenerator from './components/TemplateGenerator';
 import Uploader from './components/Uploader';
@@ -51,8 +52,9 @@ function App() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px' }}
           >
-            <span className="logo-icon">🖋️</span>
+            <span className="logo-icon"><PenTool size={28} /></span>
             <span className="logo-text">Kiru</span>
           </motion.div>
           <p className="tagline">Convierte tu escritura en una fuente tipográfica</p>
@@ -99,7 +101,9 @@ function App() {
 
         {/* Footer */}
         <footer className="app-footer">
-          <p>Hecho con ❤️ — Kiru v1.0</p>
+          <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            Hecho con <Heart size={14} className="text-accent" /> — Kiru v1.0
+          </p>
         </footer>
       </div>
     </>

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion';
+import { Loader2, Download, ArrowRight } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import './TemplateGenerator.css';
 
@@ -285,8 +286,13 @@ export default function TemplateGenerator() {
           disabled={generating}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          {generating ? '⏳ Generando...' : `📄 Descargar Plantilla ${downloadFormat.toUpperCase()}`}
+          {generating ? (
+            <><Loader2 className="spinner" size={18} /> Generando...</>
+          ) : (
+            <><Download size={18} /> Descargar Plantilla {downloadFormat.toUpperCase()}</>
+          )}
         </motion.button>
 
         <motion.button
@@ -294,8 +300,9 @@ export default function TemplateGenerator() {
           onClick={() => setStep('upload')}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          Ya tengo mi plantilla lista →
+          Ya tengo mi plantilla lista <ArrowRight size={18} />
         </motion.button>
       </div>
     </motion.div>

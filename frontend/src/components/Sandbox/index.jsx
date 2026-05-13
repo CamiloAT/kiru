@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
+import { Sparkles, Ruler, BookOpen, Monitor, Apple, Pencil, RefreshCcw, Download, ArrowLeft, Type, FileText, Cloud } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import './Sandbox.css';
 
@@ -57,8 +58,8 @@ export default function Sandbox() {
     return (
       <div className="sandbox-empty">
         <p>No hay fuente generada aún.</p>
-        <button className="btn-primary" onClick={() => setStep('upload')}>
-          ← Ir a subir plantilla
+        <button className="btn-primary flex items-center gap-2" onClick={() => setStep('upload')}>
+          <ArrowLeft size={18} /> Ir a subir plantilla
         </button>
       </div>
     );
@@ -73,14 +74,18 @@ export default function Sandbox() {
     >
       <div className="template-header">
         <span className="step-badge">Paso 3</span>
-        <h2>¡Tu Fuente está Lista! ✨</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+          ¡Tu Fuente está Lista! <Sparkles size={24} className="text-accent" />
+        </h2>
         <p>Escribe cualquier texto para probarlo con tu letra.</p>
       </div>
 
       {/* Font Size Control */}
       <div className="sandbox-controls">
         <div className="control-group">
-          <label>📐 Tamaño: {fontSize}px</label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Ruler size={16} /> Tamaño: {fontSize}px
+          </label>
           <input
             type="range" min="14" max="80" value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
@@ -127,20 +132,56 @@ export default function Sandbox() {
 
       {/* Installation Guide */}
       <details className="install-guide">
-        <summary>📖 ¿Cómo instalo la fuente?</summary>
-        <div className="install-content">
-          <div className="install-os">
-            <h4>🪟 Windows</h4>
-            <p>Haz doble clic en el archivo .ttf → Clic en "Instalar"</p>
+        <summary style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <BookOpen size={18} /> ¿Cómo instalar y usar mi fuente?
+        </summary>
+        <div className="install-content" style={{ display: 'grid', gap: '16px', marginTop: '16px' }}>
+          
+          <div className="install-os card-inner">
+            <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Monitor size={18} /> Windows (Word, PowerPoint, etc.)
+            </h4>
+            <ol style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
+              <li>Haz clic en el botón <strong>Descargar</strong> abajo para guardar el archivo <code>.ttf</code>.</li>
+              <li>Abre la carpeta donde se descargó.</li>
+              <li>Haz <strong>doble clic</strong> en el archivo <code>.ttf</code>.</li>
+              <li>Se abrirá una ventana; haz clic en el botón <strong>Instalar</strong> en la parte superior.</li>
+              <li>Abre Word o PowerPoint y busca tu fuente ("{fontName || 'MiLetra'}") en la lista de tipos de letra.</li>
+            </ol>
           </div>
-          <div className="install-os">
-            <h4>🍎 macOS</h4>
-            <p>Doble clic en el .ttf → Se abre "Catálogo Tipográfico" → "Instalar fuente"</p>
+
+          <div className="install-os card-inner">
+            <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Apple size={18} /> macOS (Pages, Word para Mac)
+            </h4>
+            <ol style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
+              <li>Descarga el archivo <code>.ttf</code>.</li>
+              <li>Haz <strong>doble clic</strong> en él.</li>
+              <li>Se abrirá la aplicación "Catálogo Tipográfico" (Font Book).</li>
+              <li>Haz clic en <strong>Instalar fuente</strong>.</li>
+            </ol>
           </div>
-          <div className="install-os">
-            <h4>🎨 Procreate (iPad)</h4>
-            <p>Importa el .ttf desde Archivos → En Procreate: Acciones → Añadir → Añadir texto → Selecciona tu fuente</p>
+
+          <div className="install-os card-inner">
+            <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Cloud size={18} /> Google Docs / Google Workspace
+            </h4>
+            <p style={{ margin: 0, fontSize: '0.9rem', padding: '10px', backgroundColor: 'rgba(255,255,255,0.05)', borderRadius: '6px' }}>
+              <strong>Nota importante:</strong> Google Docs no permite subir fuentes personalizadas directamente por restricciones de seguridad. Si quieres usar tu letra en un documento en la nube, te recomendamos usar <strong>Word Online</strong> (que a veces lo permite si está instalada en tu sistema) o exportar tu texto como imagen desde programas de diseño.
+            </p>
           </div>
+
+          <div className="install-os card-inner">
+            <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <Pencil size={18} /> Procreate / GoodNotes (iPad)
+            </h4>
+            <ol style={{ paddingLeft: '20px', margin: 0, fontSize: '0.9rem' }}>
+              <li>Guarda el <code>.ttf</code> en la app <strong>Archivos</strong> de tu iPad.</li>
+              <li><strong>Procreate:</strong> Ve a Acciones (icono de llave inglesa) → Añadir → Añadir texto. Toca el nombre de la fuente actual e importa tu archivo.</li>
+              <li><strong>GoodNotes:</strong> Usa una app gratuita como iFont para instalar el perfil de la fuente en iOS, y luego úsala en GoodNotes.</li>
+            </ol>
+          </div>
+
         </div>
       </details>
 
@@ -150,8 +191,9 @@ export default function Sandbox() {
           className="btn-secondary"
           onClick={handleNewFont}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          🔄 Crear otra fuente
+          <RefreshCcw size={18} /> Crear otra fuente
         </motion.button>
 
         <motion.button
@@ -159,8 +201,9 @@ export default function Sandbox() {
           onClick={handleDownload}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          ⬇️ Descargar {fontName || 'MiLetra'}.ttf
+          <Download size={18} /> Descargar {fontName || 'MiLetra'}.ttf
         </motion.button>
       </div>
     </motion.div>

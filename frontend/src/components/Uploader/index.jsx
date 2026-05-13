@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Camera, Sun, Contrast, RotateCw, RefreshCcw, AlertCircle, Wand2, ArrowLeft } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import './Uploader.css';
 
@@ -90,7 +91,7 @@ export default function Uploader() {
         <div {...getRootProps()} className={`dropzone ${isDragActive ? 'active' : ''}`}>
           <input {...getInputProps()} />
           <div className="dropzone-content">
-            <span className="dropzone-icon">📸</span>
+            <span className="dropzone-icon"><Camera size={48} className="text-accent" /></span>
             <p className="dropzone-text">
               {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastra tu imagen o haz clic para seleccionar'}
             </p>
@@ -112,7 +113,7 @@ export default function Uploader() {
           {/* Adjustment Controls */}
           <div className="image-controls">
             <div className="control-group">
-              <label>☀️ Brillo</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Sun size={16} /> Brillo</label>
               <input
                 type="range" min="50" max="200" value={brightness}
                 onChange={(e) => setBrightness(Number(e.target.value))}
@@ -120,7 +121,7 @@ export default function Uploader() {
               <span className="control-value">{brightness}%</span>
             </div>
             <div className="control-group">
-              <label>🔲 Contraste</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><Contrast size={16} /> Contraste</label>
               <input
                 type="range" min="50" max="200" value={contrast}
                 onChange={(e) => setContrast(Number(e.target.value))}
@@ -128,7 +129,7 @@ export default function Uploader() {
               <span className="control-value">{contrast}%</span>
             </div>
             <div className="control-group">
-              <label>🔄 Rotación</label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}><RotateCw size={16} /> Rotación</label>
               <input
                 type="range" min="-180" max="180" value={rotation}
                 onChange={(e) => setRotation(Number(e.target.value))}
@@ -140,9 +141,10 @@ export default function Uploader() {
           {/* Change Image Button */}
           <button
             className="btn-secondary change-image-btn"
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'center' }}
             onClick={() => { setUploadedImage(null); }}
           >
-            🔄 Cambiar imagen
+            <RefreshCcw size={16} /> Cambiar imagen
           </button>
         </div>
       )}
@@ -156,7 +158,9 @@ export default function Uploader() {
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
           >
-            ❌ {processingError}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <AlertCircle size={20} /> {processingError}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -167,8 +171,9 @@ export default function Uploader() {
           className="btn-secondary"
           onClick={() => setStep('template')}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
-          ← Volver
+          <ArrowLeft size={18} /> Volver
         </motion.button>
 
         <motion.button
@@ -177,11 +182,12 @@ export default function Uploader() {
           disabled={!uploadedImage || isProcessing}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
         >
           {isProcessing ? (
             <><span className="spinner" /> Procesando...</>
           ) : (
-            '🪄 Generar Fuente'
+            <><Wand2 size={18} /> Generar Fuente</>
           )}
         </motion.button>
       </div>
