@@ -6,7 +6,6 @@ extraídos de la escritura del usuario.
 """
 
 from fontTools.fontBuilder import FontBuilder
-from fontTools.pens.t2Pen import T2Pen
 from fontTools.ttLib import TTFont
 from typing import Dict
 import io

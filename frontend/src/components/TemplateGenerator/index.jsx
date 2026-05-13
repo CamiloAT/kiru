@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion';
-import useAppStore from '../store/useAppStore';
+import useAppStore from '../../store/useAppStore';
 import './TemplateGenerator.css';
 
 const TEMPLATE_CONFIGS = {
@@ -39,6 +39,7 @@ const TEMPLATE_CONFIGS = {
 export default function TemplateGenerator() {
   const { templateType, setTemplateType, setStep, fontName, setFontName } = useAppStore();
   const [generating, setGenerating] = useState(false);
+  const [downloadFormat, setDownloadFormat] = useState('pdf');
 
   const generatePDF = () => {
     setGenerating(true);
@@ -113,6 +114,105 @@ export default function TemplateGenerator() {
     setGenerating(false);
   };
 
+  const generateImage = (format) => {
+    setGenerating(true);
+    setTimeout(() => {
+      const config = TEMPLATE_CONFIGS[templateType];
+      const { chars, cols } = config;
+      const rows = Math.ceil(chars.length / cols);
+
+      const canvas = document.createElement('canvas');
+      // A4 at 300 DPI
+      const width = 2480;
+      const height = 3508;
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+
+      // White background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, width, height);
+
+      // Scale mm to pixels (1 mm = 11.811 pixels at 300 DPI)
+      const scale = 11.811;
+      const mmToPx = (mm) => mm * scale;
+
+      const pageW = mmToPx(210);
+      const pageH = mmToPx(297);
+      const marginX = mmToPx(15);
+      const marginY = mmToPx(30);
+      const gridW = pageW - marginX * 2;
+      const cellSize = Math.min(gridW / cols, (pageH - marginY * 2) / (rows + 1));
+      const gridStartX = (pageW - cellSize * cols) / 2;
+      const gridStartY = marginY + mmToPx(10);
+
+      // Title
+      ctx.fillStyle = '#000000';
+      ctx.font = 'bold 64px Helvetica, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Kiru — Plantilla de Escritura', pageW / 2, mmToPx(15));
+
+      ctx.font = 'normal 32px Helvetica, Arial, sans-serif';
+      ctx.fillStyle = '#787878';
+      ctx.fillText('Escribe cada carácter dentro de su celda con un marcador oscuro.', pageW / 2, mmToPx(22));
+
+      // Draw grid
+      ctx.strokeStyle = '#b4b4b4';
+      ctx.lineWidth = mmToPx(0.3);
+
+      for (let i = 0; i < chars.length; i++) {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const x = gridStartX + col * cellSize;
+        const y = gridStartY + row * cellSize;
+
+        // Cell border
+        ctx.strokeRect(x, y, cellSize, cellSize);
+
+        // Character label
+        ctx.font = '24px Helvetica, Arial, sans-serif';
+        ctx.fillStyle = '#a0a0a0';
+        ctx.textAlign = 'left';
+        ctx.fillText(chars[i], x + mmToPx(1.5), y + mmToPx(4) + 18);
+
+        // Baseline guide
+        const baseY = y + cellSize * 0.75;
+        ctx.strokeStyle = '#dcdcdc';
+        ctx.setLineDash([mmToPx(1), mmToPx(1)]);
+        ctx.beginPath();
+        ctx.moveTo(x + mmToPx(2), baseY);
+        ctx.lineTo(x + cellSize - mmToPx(2), baseY);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.strokeStyle = '#b4b4b4';
+      }
+
+      // Registration marks
+      const markSize = mmToPx(5);
+      ctx.fillStyle = '#000000';
+      ctx.fillRect(mmToPx(5), mmToPx(5), markSize, markSize);
+      ctx.fillRect(pageW - mmToPx(5) - markSize, mmToPx(5), markSize, markSize);
+      ctx.fillRect(mmToPx(5), pageH - mmToPx(5) - markSize, markSize, markSize);
+      ctx.fillRect(pageW - mmToPx(5) - markSize, pageH - mmToPx(5) - markSize, markSize, markSize);
+
+      // Footer
+      ctx.font = '24px Helvetica, Arial, sans-serif';
+      ctx.fillStyle = '#969696';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Fuente: ${fontName} | Tipo: ${config.label} | kiru.app`, pageW / 2, pageH - mmToPx(8));
+
+      // Download
+      const mime = format === 'png' ? 'image/png' : 'image/jpeg';
+      const dataUrl = canvas.toDataURL(mime, 1.0);
+      const link = document.createElement('a');
+      link.download = `kiru-plantilla-${templateType}.${format}`;
+      link.href = dataUrl;
+      link.click();
+
+      setGenerating(false);
+    }, 100);
+  };
+
   return (
     <motion.div
       className="template-section"
@@ -166,16 +266,39 @@ export default function TemplateGenerator() {
         </div>
       </div>
 
+      {/* Format Selector */}
+      <div className="format-selector">
+        <span className="format-label">Formato de descarga:</span>
+        <div className="format-options">
+          {['pdf', 'png', 'jpg'].map(fmt => (
+            <label key={fmt} className={`format-radio ${downloadFormat === fmt ? 'selected' : ''}`}>
+              <input 
+                type="radio" 
+                name="format" 
+                value={fmt} 
+                checked={downloadFormat === fmt} 
+                onChange={() => setDownloadFormat(fmt)} 
+                style={{ display: 'none' }}
+              />
+              {fmt.toUpperCase()}
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Actions */}
       <div className="template-actions">
         <motion.button
           className="btn-primary"
-          onClick={generatePDF}
+          onClick={() => {
+            if (downloadFormat === 'pdf') generatePDF();
+            else generateImage(downloadFormat);
+          }}
           disabled={generating}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
         >
-          {generating ? '⏳ Generando...' : '📄 Descargar Plantilla PDF'}
+          {generating ? '⏳ Generando...' : `📄 Descargar Plantilla ${downloadFormat.toUpperCase()}`}
         </motion.button>
 
         <motion.button

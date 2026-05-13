@@ -11,9 +11,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 import traceback
 
-from app.core.segmentation import segment_template
-from app.core.vectorizer import vectorize_glyphs
-from app.core.font_builder import build_font
+from app.services.segmentation import segment_template
+from app.services.vectorizer import vectorize_glyphs
+from app.services.font_builder import build_font
 
 app = FastAPI(
     title="Kiru API",

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import useAppStore from '../store/useAppStore';
+import useAppStore from '../../store/useAppStore';
 import './Uploader.css';
 
 const API_URL = '';

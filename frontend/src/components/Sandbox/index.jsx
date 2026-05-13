@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import useAppStore from '../store/useAppStore';
+import useAppStore from '../../store/useAppStore';
 import './Sandbox.css';
 
 export default function Sandbox() {
