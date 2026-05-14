@@ -205,7 +205,6 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
                             int(median_w),
                             int(median_h)
                         )
-                    print(f"DEBUG: Celda [{row_idx},{col_idx}] FALTANTE. Sintetizada en {final_flat_cells[idx]}")
 
     return final_flat_cells
 
@@ -216,7 +215,6 @@ def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int],
     Esto permite mantener el "baseline" natural y el ancho proporcional (ej: 'i' vs 'w').
     """
     if cell is None:
-        print(f"DEBUG [{char}]: Celda None provista.")
         return np.zeros((256, 20), dtype=np.uint8)
         
     x, y, w, h = cell
@@ -227,12 +225,10 @@ def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int],
     cell_img = binary[y + margin_y:y + h - margin_y, x + margin_x:x + w - margin_x]
 
     if cell_img.size == 0:
-        print(f"DEBUG [{char}]: Celda descartada por tamaño cero. Cell={cell}")
         return np.zeros((256, 20), dtype=np.uint8)
 
     coords = cv2.findNonZero(cell_img)
     if coords is None:
-        print(f"DEBUG [{char}]: Celda vacía (sin tinta negra). Cell={cell}")
         return np.zeros((256, 20), dtype=np.uint8)
 
     bx, by, bw, bh = cv2.boundingRect(coords)
@@ -284,8 +280,6 @@ def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[st
 
     glyphs = {}
     
-    print(f"DEBUG: Processing {len(chars)} characters. Extracted {len(cells)} cells.")
-    
     for i, char in enumerate(chars):
         if i < len(cells) and cells[i] is not None:
             glyph = extract_glyph_from_cell(binary, cells[i], char=char)
@@ -294,12 +288,5 @@ def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[st
                 if glyph.shape[0] > 0 and glyph.shape[1] > 0:
                     glyph = cv2.copyMakeBorder(glyph, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
                     glyphs[char] = glyph
-                    print(f"DEBUG [{char}]: OK! Extracted glyph of shape {glyph.shape}. Box: {cells[i]}")
-                else:
-                    print(f"DEBUG [{char}]: FAIL! Extracted glyph output is empty/0-sized. Box: {cells[i]}")
-            else:
-                print(f"DEBUG [{char}]: FAIL! Glyph was empty (np.any returned False) or empty shape. Box: {cells[i]}")
-        else:
-            print(f"DEBUG [{char}]: Celda NO ASIGNADA (None) en posición {i}.")
 
     return glyphs
