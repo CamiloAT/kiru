@@ -3,59 +3,19 @@ import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion';
 import { Loader2, Download, ArrowRight, FileText, Settings, Info, Image as ImageIcon, File, Type, Hash, Globe, LayoutGrid, CaseUpper, CaseLower } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
+import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './TemplateGenerator.css';
 
-const TEMPLATE_CONFIGS = {
-  extended: {
-    label: 'Extendida',
-    description: 'Letras, números, puntuación, símbolos matemáticos y tildes.',
-    icon: <Globe size={24} />,
-    chars: [
-      ...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
-      ...'abcdefghijklmnñopqrstuvwxyz'.split(''),
-      ...'0123456789'.split(''),
-      ...'ÁÉÍÓÚÜáéíóúü'.split(''),
-      ...'.,:;!¡?¿\'"()-=_+*/\\|@#$%&<>[]{}~^`'.split(''),
-    ],
-    cols: 10,
-  },
-  full: {
-    label: 'Básica',
-    description: 'A-Z, a-z, 0-9 y símbolos básicos con ñ y tildes.',
-    icon: <Type size={24} />,
-    chars: [
-      ...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
-      ...'abcdefghijklmnñopqrstuvwxyz'.split(''),
-      ...'0123456789'.split(''),
-      ...'.,:;!¡?¿\'"()-áéíóúü'.split(''),
-    ],
-    cols: 9,
-  },
-  uppercase: {
-    label: 'Solo Mayúsculas',
-    description: 'A-Z incluyendo la Ñ.',
-    icon: <CaseUpper size={24} />,
-    chars: 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
-    cols: 9,
-  },
-  lowercase: {
-    label: 'Solo Minúsculas',
-    description: 'a-z incluyendo la ñ.',
-    icon: <CaseLower size={24} />,
-    chars: 'abcdefghijklmnñopqrstuvwxyz'.split(''),
-    cols: 9,
-  },
-  digits: {
-    label: 'Solo Números',
-    description: 'Números del 0 al 9.',
-    icon: <Hash size={24} />,
-    chars: '0123456789'.split(''),
-    cols: 5,
-  },
+const ICONS = {
+  extended: <Globe size={24} />,
+  full: <Type size={24} />,
+  uppercase: <CaseUpper size={24} />,
+  lowercase: <CaseLower size={24} />,
+  digits: <Hash size={24} />
 };
 
 export default function TemplateGenerator() {
-  const { templateType, setTemplateType, setStep, fontName, setFontName } = useAppStore();
+  const { templateType, setTemplateType, setStep } = useAppStore();
   const [generating, setGenerating] = useState(false);
   const [downloadFormat, setDownloadFormat] = useState('pdf');
 
@@ -121,7 +81,7 @@ export default function TemplateGenerator() {
     // Footer
     doc.setFontSize(7);
     doc.setTextColor(150);
-    doc.text(`Fuente: ${fontName} | Tipo: ${config.label} | kiru.app`, pageW / 2, pageH - 8, { align: 'center' });
+    doc.text(`Tipo: ${config.label} | kiru.app`, pageW / 2, pageH - 8, { align: 'center' });
 
     doc.save(`kiru-plantilla-${templateType}.pdf`);
     setGenerating(false);
@@ -205,7 +165,7 @@ export default function TemplateGenerator() {
       ctx.font = '24px Helvetica, Arial, sans-serif';
       ctx.fillStyle = '#969696';
       ctx.textAlign = 'center';
-      ctx.fillText(`Fuente: ${fontName} | Tipo: ${config.label} | kiru.app`, pageW / 2, pageH - mmToPx(8));
+      ctx.fillText(`Tipo: ${config.label} | kiru.app`, pageW / 2, pageH - mmToPx(8));
 
       // Download
       const mime = format === 'png' ? 'image/png' : 'image/jpeg';
@@ -232,19 +192,6 @@ export default function TemplateGenerator() {
         <p>Elige el tipo de plantilla, imprímela, y escribe cada letra con un marcador oscuro.</p>
       </div>
 
-      {/* Font Name Input */}
-      <div className="font-name-input">
-        <label htmlFor="fontNameInput">Nombre de tu fuente</label>
-        <input
-          id="fontNameInput"
-          type="text"
-          value={fontName}
-          onChange={(e) => setFontName(e.target.value)}
-          placeholder="Ej: Mi Letra Bonita"
-          maxLength={30}
-        />
-      </div>
-
       {/* Template Type Cards */}
       <div className="template-options">
         {Object.entries(TEMPLATE_CONFIGS).map(([key, config]) => (
@@ -255,7 +202,7 @@ export default function TemplateGenerator() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <div className="template-card-icon">{config.icon}</div>
+            <div className="template-card-icon">{ICONS[key]}</div>
             <div className="template-card-content">
               <span className="template-card-label">{config.label}</span>
               <span className="template-card-desc">{config.description}</span>

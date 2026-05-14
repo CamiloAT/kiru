@@ -1,15 +1,16 @@
 import { useCallback, useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Camera, Sun, Contrast, RotateCw, RefreshCcw, AlertCircle, Wand2, ArrowLeft, RotateCcw } from 'lucide-react'; 
+import { Camera, Sun, Contrast, RotateCw, RefreshCcw, AlertCircle, Wand2, ArrowLeft, RotateCcw, ChevronDown } from 'lucide-react'; 
 import useAppStore from '../../store/useAppStore';
+import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Uploader.css';
 
 const API_URL = '';
 
 export default function Uploader() {
   const {
-    fontName, templateType,
+    fontName, templateType, setTemplateType,
     uploadedImage, imagePreview, setUploadedImage,
     isProcessing, setProcessing,
     processingError, setProcessingError,
@@ -19,6 +20,8 @@ export default function Uploader() {
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
   const [rotation, setRotation] = useState(0);
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const onDrop = useCallback((acceptedFiles) => {
     if (acceptedFiles.length > 0) {
@@ -34,9 +37,13 @@ export default function Uploader() {
     maxSize: 20 * 1024 * 1024, // 20MB
   });
 
-  const handleGenerate = async () => {
+  const handleGenerateClick = () => {
     if (!uploadedImage) return;
+    setShowConfirmModal(true);
+  };
 
+  const handleGenerate = async () => {
+    setShowConfirmModal(false);
     setProcessing(true);
     setProcessingError(null);
 
@@ -74,6 +81,7 @@ export default function Uploader() {
   };
 
   return (
+    <>
     <motion.div
       className="upload-section"
       initial={{ opacity: 0, y: 20 }}
@@ -174,6 +182,93 @@ export default function Uploader() {
         )}
       </AnimatePresence>
 
+      {/* Verification Select */}
+      <AnimatePresence>
+        {uploadedImage && !isProcessing && (
+          <motion.div 
+            className="template-verification"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, height: 0 }}
+            style={{ 
+              marginTop: '1.5rem', 
+              background: 'var(--bg-secondary)', 
+              padding: '16px', 
+              borderRadius: 'var(--radius-md)', 
+              border: '1px solid var(--border-subtle)',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              alignItems: 'center'
+            }}
+          >
+            <label style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.95rem' }}>
+              ¿Estás subiendo la plantilla correcta?
+            </label>
+            <div style={{ position: 'relative', width: '100%', maxWidth: '400px' }}>
+              <div 
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                style={{ 
+                  padding: '12px 16px', 
+                  background: 'var(--bg-primary)', 
+                  border: '1px solid var(--border-subtle)', 
+                  borderRadius: 'var(--radius-sm)', 
+                  cursor: 'pointer', 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  color: 'var(--text-primary)',
+                  fontSize: '0.95rem'
+                }}
+              >
+                <span>{TEMPLATE_CONFIGS[templateType].label} ({TEMPLATE_CONFIGS[templateType].chars.length} caracteres)</span>
+                <ChevronDown size={18} style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', color: 'var(--text-secondary)' }} />
+              </div>
+              <AnimatePresence>
+                {isDropdownOpen && (
+                  <motion.div 
+                    initial={{ opacity: 0, y: -5 }} 
+                    animate={{ opacity: 1, y: 0 }} 
+                    exit={{ opacity: 0, y: -5 }} 
+                    transition={{ duration: 0.15 }}
+                    style={{ 
+                      position: 'absolute', 
+                      bottom: '100%', left: 0, right: 0, 
+                      marginBottom: '4px', 
+                      background: 'var(--bg-primary)', 
+                      border: '1px solid var(--border-subtle)', 
+                      borderRadius: 'var(--radius-sm)', 
+                      overflow: 'hidden', 
+                      zIndex: 10, 
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.3)' 
+                    }}
+                  >
+                    {Object.entries(TEMPLATE_CONFIGS).map(([key, config]) => (
+                      <div 
+                        key={key} 
+                        onClick={() => { setTemplateType(key); setIsDropdownOpen(false); }}
+                        style={{ 
+                          padding: '10px 16px', 
+                          cursor: 'pointer', 
+                          background: templateType === key ? 'var(--bg-secondary)' : 'transparent',
+                          color: templateType === key ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          transition: 'background 0.2s',
+                          borderBottom: '1px solid var(--border-subtle)'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-secondary)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = templateType === key ? 'var(--bg-secondary)' : 'transparent'}
+                      >
+                        {config.label} <span style={{ opacity: 0.6, fontSize: '0.9em', marginLeft: '4px' }}>({config.chars.length} caracteres)</span>
+                      </div>
+                    ))}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Actions */}
       <div className="template-actions">
         <motion.button
@@ -187,7 +282,7 @@ export default function Uploader() {
 
         <motion.button
           className="btn-primary"
-          onClick={handleGenerate}
+          onClick={handleGenerateClick}
           disabled={!uploadedImage || isProcessing}
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
@@ -201,5 +296,52 @@ export default function Uploader() {
         </motion.button>
       </div>
     </motion.div>
+
+    {/* Confirmation Modal (Moved outside the animated container) */}
+    <AnimatePresence>
+      {showConfirmModal && (
+        <>
+          <motion.div 
+            className="modal-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setShowConfirmModal(false)}
+            style={{
+              position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+              background: 'rgba(0,0,0,0.5)', zIndex: 1000,
+              backdropFilter: 'blur(2px)'
+            }}
+          />
+          <motion.div 
+            className="modal-content"
+            initial={{ opacity: 0, scale: 0.9, x: "-50%", y: "-40%" }}
+            animate={{ opacity: 1, scale: 1, x: "-50%", y: "-50%" }}
+            exit={{ opacity: 0, scale: 0.9, x: "-50%", y: "-40%" }}
+            style={{
+              position: 'fixed', top: '50%', left: '50%',
+              background: 'var(--bg-primary)', padding: '2rem', borderRadius: 'var(--radius-lg)',
+              zIndex: 1001, width: '90%', maxWidth: '400px', boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+              textAlign: 'center'
+            }}
+          >
+            <h3 style={{ marginBottom: '1rem', color: 'var(--text-primary)' }}>Confirmar Plantilla</h3>
+            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+              Estás a punto de extraer <strong>{TEMPLATE_CONFIGS[templateType].chars.length} caracteres</strong> correspondientes a la plantilla <strong>"{TEMPLATE_CONFIGS[templateType].label}"</strong>.<br/><br/>
+              ¿Estás seguro de que la imagen corresponde a este tipo?
+            </p>
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+              <button className="btn-secondary" onClick={() => setShowConfirmModal(false)}>
+                Cancelar
+              </button>
+              <button className="btn-primary" onClick={handleGenerate}>
+                Sí, Generar
+              </button>
+            </div>
+          </motion.div>
+        </>
+      )}
+    </AnimatePresence>
+    </>
   );
 }

@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Type, FileText, Cloud } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
+import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Sandbox.css';
 
 export default function Sandbox() {
-  const { fontBytes, fontName, setStep, reset } = useAppStore();
+  const { fontBytes, fontName, setFontName, templateType, setStep, reset } = useAppStore();
   const [text, setText] = useState('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.');
   const [fontSize, setFontSize] = useState(32);
   const [fontLoaded, setFontLoaded] = useState(false);
@@ -117,17 +118,31 @@ export default function Sandbox() {
         rows={4}
       />
 
+      {/* Font Name Input */}
+      <div className="font-name-input" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <label htmlFor="fontNameInput" style={{ fontWeight: 600, fontSize: '0.9rem' }}>Nombre de tu fuente</label>
+        <input
+          id="fontNameInput"
+          type="text"
+          value={fontName}
+          onChange={(e) => setFontName(e.target.value)}
+          placeholder="Ej: Mi Letra Bonita"
+          maxLength={30}
+          style={{ padding: '12px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', fontSize: '1rem', outline: 'none' }}
+        />
+      </div>
+
       {/* Sample Texts */}
       <div className="sample-texts">
         <span className="sample-label">Textos de prueba:</span>
-        <button className="sample-btn" onClick={() => setText('ABCDEFGHIJKLMNÑOPQRSTUVWXYZ\nabcdefghijklmnñopqrstuvwxyz\n0123456789')}>
-          Alfabeto
+        <button className="sample-btn" onClick={() => setText('A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z\na b c d e f g h i j k l m n ñ o p q r s t u v w x y z\n0 1 2 3 4 5 6 7 8 9')}>
+          Alfabeto y Números
         </button>
-        <button className="sample-btn" onClick={() => setText('El veloz murciélago hindú comía feliz cardillo y kiwi.')}>
+        <button className="sample-btn" onClick={() => setText('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.')}>
           Pangrama
         </button>
-        <button className="sample-btn" onClick={() => setText('¡Hola Mundo!\n¿Cómo estás?\nÉsta es mi letra.')}>
-          Saludos
+        <button className="sample-btn" onClick={() => setText(TEMPLATE_CONFIGS[templateType]?.chars?.join(' ') || 'A B C')}>
+          Todos los caracteres
         </button>
       </div>
 

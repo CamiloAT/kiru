@@ -47,8 +47,19 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
     """
     h, w = binary.shape
 
-    # Encontrar contornos directamente sobre la imagen binaria (las cajas son desconectadas)
-    contours, _ = cv2.findContours(binary, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+    # Aislar las líneas rectas verticales y horizontales de la cuadrícula usando morfología matemática.
+    # Esto "borra" cualquier trazo a mano alzada (letras) que cruce la línea, 
+    # dejando solo el esqueleto perfecto del cuadro original impreso.
+    kernel_x = cv2.getStructuringElement(cv2.MORPH_RECT, (w // 30, 1))
+    kernel_y = cv2.getStructuringElement(cv2.MORPH_RECT, (1, h // 30))
+
+    horiz_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel_x)
+    vert_lines = cv2.morphologyEx(binary, cv2.MORPH_OPEN, kernel_y)
+
+    clean_grid = cv2.add(horiz_lines, vert_lines)
+
+    # Encontrar contornos sobre el esqueleto limpio (usar RETR_TREE para detectar cuadros internos)
+    contours, _ = cv2.findContours(clean_grid, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
     # Filtrar contornos que sean celdas cuadradas razonables
     min_cell_size = w // (expected_cols * 3)
@@ -194,15 +205,20 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
                             int(median_w),
                             int(median_h)
                         )
+                    print(f"DEBUG: Celda [{row_idx},{col_idx}] FALTANTE. Sintetizada en {final_flat_cells[idx]}")
 
     return final_flat_cells
 
 
-def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int]) -> np.ndarray:
+def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int], char: str = "?") -> np.ndarray:
     """
     Extrae el contenido de una celda conservando su altura total pero ajustando el ancho a la tinta.
     Esto permite mantener el "baseline" natural y el ancho proporcional (ej: 'i' vs 'w').
     """
+    if cell is None:
+        print(f"DEBUG [{char}]: Celda None provista.")
+        return np.zeros((256, 20), dtype=np.uint8)
+        
     x, y, w, h = cell
     margin_x = int(w * 0.04)
     margin_y = int(h * 0.04)
@@ -211,10 +227,12 @@ def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int])
     cell_img = binary[y + margin_y:y + h - margin_y, x + margin_x:x + w - margin_x]
 
     if cell_img.size == 0:
+        print(f"DEBUG [{char}]: Celda descartada por tamaño cero. Cell={cell}")
         return np.zeros((256, 20), dtype=np.uint8)
 
     coords = cv2.findNonZero(cell_img)
     if coords is None:
+        print(f"DEBUG [{char}]: Celda vacía (sin tinta negra). Cell={cell}")
         return np.zeros((256, 20), dtype=np.uint8)
 
     bx, by, bw, bh = cv2.boundingRect(coords)
@@ -265,15 +283,23 @@ def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[st
     cells = find_grid_cells(binary, expected_cols=cols, expected_rows=rows)
 
     glyphs = {}
+    
+    print(f"DEBUG: Processing {len(chars)} characters. Extracted {len(cells)} cells.")
+    
     for i, char in enumerate(chars):
-        if i < len(cells):
-            cell = cells[i]
-            if cell != (0, 0, 0, 0):
-                glyph_img = extract_glyph_from_cell(binary, cell)
+        if i < len(cells) and cells[i] is not None:
+            glyph = extract_glyph_from_cell(binary, cells[i], char=char)
+            if glyph.size > 0 and np.any(glyph):
+                # Verify bounds before padding
+                if glyph.shape[0] > 0 and glyph.shape[1] > 0:
+                    glyph = cv2.copyMakeBorder(glyph, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
+                    glyphs[char] = glyph
+                    print(f"DEBUG [{char}]: OK! Extracted glyph of shape {glyph.shape}. Box: {cells[i]}")
+                else:
+                    print(f"DEBUG [{char}]: FAIL! Extracted glyph output is empty/0-sized. Box: {cells[i]}")
             else:
-                glyph_img = np.zeros((256, 256), dtype=np.uint8)
+                print(f"DEBUG [{char}]: FAIL! Glyph was empty (np.any returned False) or empty shape. Box: {cells[i]}")
         else:
-            glyph_img = np.zeros((256, 256), dtype=np.uint8)
-        glyphs[char] = glyph_img
+            print(f"DEBUG [{char}]: Celda NO ASIGNADA (None) en posición {i}.")
 
     return glyphs
