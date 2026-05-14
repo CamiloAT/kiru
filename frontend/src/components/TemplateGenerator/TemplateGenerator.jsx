@@ -69,8 +69,8 @@ export default function TemplateGenerator() {
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageW = 210;
     const pageH = 297;
-    const marginX = 15;
-    const marginY = 30;
+    const marginX = 25; // Aumentado para evitar recortes del escáner en los bordes
+    const marginY = 35;
     const gridW = pageW - marginX * 2;
     const cellSize = Math.min(gridW / cols, (pageH - marginY * 2) / (rows + 1));
     const gridStartX = (pageW - cellSize * cols) / 2;
@@ -152,8 +152,8 @@ export default function TemplateGenerator() {
 
       const pageW = mmToPx(210);
       const pageH = mmToPx(297);
-      const marginX = mmToPx(15);
-      const marginY = mmToPx(30);
+      const marginX = mmToPx(25); // Aumentado para mayor margen de seguridad
+      const marginY = mmToPx(35);
       const gridW = pageW - marginX * 2;
       const cellSize = Math.min(gridW / cols, (pageH - marginY * 2) / (rows + 1));
       const gridStartX = (pageW - cellSize * cols) / 2;
