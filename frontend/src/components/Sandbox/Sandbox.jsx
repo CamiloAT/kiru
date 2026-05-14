@@ -150,11 +150,8 @@ export default function Sandbox() {
             <div className="install-content" style={{ display: 'grid', gap: '16px', padding: '0 20px 20px' }}>
               <div className="install-os card-inner" style={{ borderLeft: '4px solid var(--accent-primary)', paddingLeft: '16px' }}>
               <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 100 100">
-                  <path fill="var(--accent-primary)" d="M5 5 h40 v40 h-40 z" />
-                  <path fill="var(--accent-primary)" d="M55 5 h40 v40 h-40 z" />
-                  <path fill="var(--accent-primary)" d="M5 55 h40 v40 h-40 z" />
-                  <path fill="var(--accent-primary)" d="M55 55 h40 v40 h-40 z" />
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 88 88">
+                  <path fill="var(--accent-primary)" d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.028 34.453L0 75.44v-31.84zm4.326-39.02L87.314 0v41.26l-47.318.376zm47.318 39.897v41.21l-47.329-6.678v-34.9z"/>
                 </svg>
                 Windows (Word, PowerPoint, etc.)
               </h4>

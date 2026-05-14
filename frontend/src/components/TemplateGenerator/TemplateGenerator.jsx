@@ -1,14 +1,28 @@
 import { useState } from 'react';
 import { jsPDF } from 'jspdf';
 import { motion } from 'framer-motion';
-import { Loader2, Download, ArrowRight } from 'lucide-react';
+import { Loader2, Download, ArrowRight, FileText, Settings, Info, Image as ImageIcon, File, Type, Hash, Globe, LayoutGrid, CaseUpper, CaseLower } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import './TemplateGenerator.css';
 
 const TEMPLATE_CONFIGS = {
+  extended: {
+    label: 'Extendida',
+    description: 'Letras, números, puntuación, símbolos matemáticos y tildes.',
+    icon: <Globe size={24} />,
+    chars: [
+      ...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
+      ...'abcdefghijklmnñopqrstuvwxyz'.split(''),
+      ...'0123456789'.split(''),
+      ...'ÁÉÍÓÚÜáéíóúü'.split(''),
+      ...'.,:;!¡?¿\'"()-=_+*/\\|@#$%&<>[]{}~^`'.split(''),
+    ],
+    cols: 10,
+  },
   full: {
-    label: 'Completa (Español)',
-    description: 'A-Z, a-z, 0-9 y símbolos con ñ, tildes',
+    label: 'Básica',
+    description: 'A-Z, a-z, 0-9 y símbolos básicos con ñ y tildes.',
+    icon: <Type size={24} />,
     chars: [
       ...'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
       ...'abcdefghijklmnñopqrstuvwxyz'.split(''),
@@ -19,19 +33,22 @@ const TEMPLATE_CONFIGS = {
   },
   uppercase: {
     label: 'Solo Mayúsculas',
-    description: 'A-Z incluyendo la Ñ',
+    description: 'A-Z incluyendo la Ñ.',
+    icon: <CaseUpper size={24} />,
     chars: 'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split(''),
     cols: 9,
   },
   lowercase: {
     label: 'Solo Minúsculas',
-    description: 'a-z incluyendo la ñ',
+    description: 'a-z incluyendo la ñ.',
+    icon: <CaseLower size={24} />,
     chars: 'abcdefghijklmnñopqrstuvwxyz'.split(''),
     cols: 9,
   },
   digits: {
     label: 'Solo Números',
-    description: '0-9',
+    description: 'Números del 0 al 9.',
+    icon: <Hash size={24} />,
     chars: '0123456789'.split(''),
     cols: 5,
   },
@@ -238,9 +255,12 @@ export default function TemplateGenerator() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
           >
-            <span className="template-card-label">{config.label}</span>
-            <span className="template-card-desc">{config.description}</span>
-            <span className="template-card-count">{config.chars.length} caracteres</span>
+            <div className="template-card-icon">{config.icon}</div>
+            <div className="template-card-content">
+              <span className="template-card-label">{config.label}</span>
+              <span className="template-card-desc">{config.description}</span>
+              <span className="template-card-count">{config.chars.length} caracteres</span>
+            </div>
           </motion.button>
         ))}
       </div>

@@ -15,10 +15,11 @@ from typing import List, Tuple, Dict
 TEMPLATE_CHARS_UPPER = list("ABCDEFGHIJKLMNÑOPQRSTUVWXYZ")
 TEMPLATE_CHARS_LOWER = list("abcdefghijklmnñopqrstuvwxyz")
 TEMPLATE_CHARS_DIGITS = list("0123456789")
-TEMPLATE_CHARS_SYMBOLS = list(".,;:!¡?¿'\"()-áéíóúü")
+TEMPLATE_CHARS_SYMBOLS = list(".,:;!¡?¿'\"()-áéíóúü")
+TEMPLATE_CHARS_EXTENDED_SYMBOLS = list("ÁÉÍÓÚÜáéíóúü.,:;!¡?¿'\"()-=_+*/\\|@#$%&<>[]{}~^`")
 
 ALL_CHARS = TEMPLATE_CHARS_UPPER + TEMPLATE_CHARS_LOWER + TEMPLATE_CHARS_DIGITS + TEMPLATE_CHARS_SYMBOLS
-
+EXTENDED_CHARS = TEMPLATE_CHARS_UPPER + TEMPLATE_CHARS_LOWER + TEMPLATE_CHARS_DIGITS + TEMPLATE_CHARS_EXTENDED_SYMBOLS
 
 def preprocess_image(image_bytes: bytes) -> np.ndarray:
     """Convierte bytes de imagen a una imagen OpenCV preprocesada (binaria)."""
@@ -160,6 +161,9 @@ def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[st
     elif template_type == "digits":
         chars = TEMPLATE_CHARS_DIGITS
         cols, rows = 5, 2
+    elif template_type == "extended":
+        chars = EXTENDED_CHARS
+        cols, rows = 10, 11
     else:  # full
         chars = ALL_CHARS
         cols, rows = 9, 10

@@ -32,6 +32,14 @@ CHAR_TO_GLYPH_NAME = {
     '(': 'parenleft', ')': 'parenright', '-': 'hyphen',
     'á': 'aacute', 'é': 'eacute', 'í': 'iacute', 'ó': 'oacute',
     'ú': 'uacute', 'ü': 'udieresis',
+    'Á': 'Aacute', 'É': 'Eacute', 'Í': 'Iacute', 'Ó': 'Oacute',
+    'Ú': 'Uacute', 'Ü': 'Udieresis',
+    '_': 'underscore', '=': 'equal', '+': 'plus', '*': 'asterisk',
+    '/': 'slash', '\\': 'backslash', '|': 'bar', '@': 'at',
+    '#': 'numbersign', '$': 'dollar', '%': 'percent', '&': 'ampersand',
+    '<': 'less', '>': 'greater', '[': 'bracketleft', ']': 'bracketright',
+    '{': 'braceleft', '}': 'braceright', '~': 'asciitilde', '^': 'asciicircum',
+    '`': 'grave'
 }
 
 
