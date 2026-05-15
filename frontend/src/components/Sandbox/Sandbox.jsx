@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
-import { motion } from 'framer-motion';
-import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Type, FileText, Cloud } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Type, FileText, Cloud, Bold, Italic, Underline, Palette, Check } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Sandbox.css';
@@ -11,7 +11,18 @@ export default function Sandbox() {
   const [fontSize, setFontSize] = useState(32);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
+  const [formatState, setFormatState] = useState({ bold: false, italic: false, underline: false });
+  const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
+  const [selectedColor, setSelectedColor] = useState('#000000');
   const previewRef = useRef(null);
+  
+  const updateFormatState = useCallback(() => {
+    setFormatState({
+      bold: document.queryCommandState('bold'),
+      italic: document.queryCommandState('italic'),
+      underline: document.queryCommandState('underline'),
+    });
+  }, []);
 
   // Load the generated font into the document
   useEffect(() => {
@@ -39,6 +50,18 @@ export default function Sandbox() {
       });
     };
   }, [fontBytes]);
+
+  const formatText = (command, value = null) => {
+    document.execCommand(command, false, value);
+    updateFormatState();
+    previewRef.current?.focus();
+  };
+
+  const handleSampleText = (newText) => {
+    if (previewRef.current) {
+      previewRef.current.innerText = newText;
+    }
+  };
 
   const handleDownload = () => {
     if (!fontBytes) return;
@@ -82,41 +105,132 @@ export default function Sandbox() {
         <p>Escribe cualquier texto para probarlo con tu letra.</p>
       </div>
 
-      {/* Font Size Control */}
-      <div className="sandbox-controls">
-        <div className="control-group">
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+      {/* Toolbar & Controls */}
+      <div className="sandbox-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'var(--bg-secondary)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: '1rem', flexDirection: 'row' }}>
+        <div className="control-group format-toolbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '12px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <button className={`format-btn ${formatState.bold ? 'active' : ''}`} onClick={() => formatText('bold')} title="Negrita (Ctrl/Cmd + B)">
+              <Bold size={18} />
+            </button>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+B</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <button className={`format-btn ${formatState.italic ? 'active' : ''}`} onClick={() => formatText('italic')} title="Cursiva (Ctrl/Cmd + I)">
+              <Italic size={18} />
+            </button>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+I</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+            <button className={`format-btn ${formatState.underline ? 'active' : ''}`} onClick={() => formatText('underline')} title="Subrayado (Ctrl/Cmd + U)">
+              <Underline size={18} />
+            </button>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+U</span>
+          </div>
+          <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px' }}></div>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', position: 'relative' }}>
+            <button 
+              className="format-btn" 
+              onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
+              title="Color del texto"
+            >
+              <Palette size={18} />
+            </button>
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Color</span>
+            
+            <AnimatePresence>
+              {isColorPickerOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  style={{ 
+                    position: 'absolute', 
+                    top: '100%', 
+                    left: 0, 
+                    marginTop: '8px', 
+                    background: 'var(--bg-secondary)', 
+                    border: '1px solid var(--border-subtle)', 
+                    borderRadius: 'var(--radius-md)', 
+                    padding: '16px', 
+                    zIndex: 50,
+                    boxShadow: 'var(--shadow-card)',
+                    width: '227px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '12px'
+                  }}
+                >
+                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>Color del texto</div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {['#000000', '#8E8E93', '#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#1E8449', '#32ADE6', '#007AFF', '#AF52DE', '#FF2D55', '#FF69B4'].map(color => (
+                      <button 
+                        key={color}
+                        onClick={() => {
+                          setSelectedColor(color);
+                          formatText('foreColor', color);
+                          setIsColorPickerOpen(false);
+                        }}
+                        style={{ 
+                          width: '32px', height: '32px', borderRadius: '50%', background: color, 
+                          border: selectedColor === color ? '2px solid var(--text-primary)' : '2px solid transparent',
+                          cursor: 'pointer', transition: 'transform 0.1s'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
+                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                      />
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+        
+        <div className="control-group" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600 }}>
             <Ruler size={16} /> Tamaño: {fontSize}px
           </label>
           <input
             type="range" min="14" max="80" value={fontSize}
             onChange={(e) => setFontSize(Number(e.target.value))}
+            style={{ width: '120px' }}
           />
         </div>
       </div>
 
-      {/* Preview Area */}
-      <div className="sandbox-preview-area">
+      {/* Editor Area */}
+      <div className="sandbox-preview-area" style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
         <div
           ref={previewRef}
-          className="sandbox-preview"
+          contentEditable={true}
+          suppressContentEditableWarning={true}
+          onKeyUp={updateFormatState}
+          onMouseUp={updateFormatState}
+          className="sandbox-textarea rich-editor"
           style={{
+            flex: 1,
             fontFamily: fontLoaded ? "'KiruUserFont', serif" : 'serif',
             fontSize: `${fontSize}px`,
+            minHeight: '200px',
+            border: 'none',
+            borderRadius: 'var(--radius-lg)',
+            padding: '40px',
+            outline: 'none',
+            whiteSpace: 'pre-wrap',
+            background: '#ffffff',
+            color: '#000000',
+            boxShadow: 'none'
+          }}
+          onInput={(e) => {
+            if (e.target.innerText.trim() === '') {
+              // Ensure it doesn't collapse entirely
+            }
           }}
         >
-          {text || 'Escribe algo arriba...'}
+          El veloz murciélago hindú comía feliz cardillo y kiwi.<br/>La cigüeña tocaba el saxofón detrás del palenque de paja.
         </div>
       </div>
-
-      {/* Text Input */}
-      <textarea
-        className="sandbox-textarea"
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        placeholder="Escribe aquí para probar tu fuente..."
-        rows={4}
-      />
 
       {/* Font Name Input */}
       <div className="font-name-input" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -135,13 +249,13 @@ export default function Sandbox() {
       {/* Sample Texts */}
       <div className="sample-texts">
         <span className="sample-label">Textos de prueba:</span>
-        <button className="sample-btn" onClick={() => setText('A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z\na b c d e f g h i j k l m n ñ o p q r s t u v w x y z\n0 1 2 3 4 5 6 7 8 9')}>
+        <button className="sample-btn" onClick={() => handleSampleText('A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z\na b c d e f g h i j k l m n ñ o p q r s t u v w x y z\n0 1 2 3 4 5 6 7 8 9')}>
           Alfabeto y Números
         </button>
-        <button className="sample-btn" onClick={() => setText('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.')}>
+        <button className="sample-btn" onClick={() => handleSampleText('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.')}>
           Pangrama
         </button>
-        <button className="sample-btn" onClick={() => setText(TEMPLATE_CONFIGS[templateType]?.chars?.join(' ') || 'A B C')}>
+        <button className="sample-btn" onClick={() => handleSampleText(TEMPLATE_CONFIGS[templateType]?.chars?.join(' ') || 'A B C')}>
           Todos los caracteres
         </button>
       </div>
