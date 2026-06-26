@@ -40,10 +40,10 @@ def preprocess_image(image_bytes: bytes) -> np.ndarray:
     return binary
 
 
-def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) -> List[Tuple[int, int, int, int]]:
+def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) -> Tuple[List[Tuple[int, int, int, int]], np.ndarray]:
     """
     Detecta las celdas de la cuadrícula en la imagen binarizada.
-    Retorna una lista de (x, y, w, h) ordenadas de izquierda a derecha, arriba a abajo.
+    Retorna una tupla: (lista de celdas (x, y, w, h), máscara de la grilla).
     """
     h, w = binary.shape
 
@@ -76,7 +76,7 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
                 raw_cells.append((x, y, cw, ch))
                 
     if not raw_cells:
-        return []
+        return [], clean_grid
 
     # Filtrar basado en la mediana del tamaño para quitar marcas perdidas
     median_w = np.median([c[2] for c in raw_cells])
@@ -206,45 +206,83 @@ def find_grid_cells(binary: np.ndarray, expected_cols: int, expected_rows: int) 
                             int(median_h)
                         )
 
-    return final_flat_cells
+    return final_flat_cells, clean_grid
 
 
-def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int], char: str = "?") -> np.ndarray:
+def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int], clean_grid: np.ndarray, char: str = "?") -> np.ndarray:
     """
-    Extrae el contenido de una celda conservando su altura total pero ajustando el ancho a la tinta.
-    Esto permite mantener el "baseline" natural y el ancho proporcional (ej: 'i' vs 'w').
+    Extrae el contenido de una celda sustrayendo las líneas de la grilla
+    y filtrando componentes pequeñas (etiquetas, residuos).
     """
     if cell is None:
         return np.zeros((256, 20), dtype=np.uint8)
         
     x, y, w, h = cell
-    margin_x = int(w * 0.04)
-    margin_y = int(h * 0.04)
-    
-    # Recortamos los bordes proporcionalmente para evitar ruido de la grilla
-    cell_img = binary[y + margin_y:y + h - margin_y, x + margin_x:x + w - margin_x]
+
+    # Recortar la región de la celda del binario y de la máscara de grilla
+    cell_region = binary[y:y + h, x:x + w].copy()
+    grid_mask = clean_grid[y:y + h, x:x + w]
+
+    # Sustraer las líneas de la grilla conocidas
+    cell_region[grid_mask > 0] = 0
+
+    # Margen del 8% para evitar bordes residuales
+    margin_x = int(w * 0.08)
+    margin_y = int(h * 0.08)
+    cell_img = cell_region[margin_y:h - margin_y, margin_x:w - margin_x]
 
     if cell_img.size == 0:
         return np.zeros((256, 20), dtype=np.uint8)
 
+    # Filtrar por componentes conectadas:
+    # - Conservar componentes con área >= 0.5% del área de la celda
+    # - Y que no sean líneas alargadas (aspect ratio extremo = residuo de grilla)
+    num_labels, labels, stats, centroids = cv2.connectedComponentsWithStats(cell_img, connectivity=8)
+    if num_labels <= 1:
+        return np.zeros((256, 20), dtype=np.uint8)
+
+    cell_area = cell_img.shape[0] * cell_img.shape[1]
+    min_area = cell_area * 0.005  # 0.5% para no perder glyphs delgados
+
+    mask = np.zeros_like(cell_img)
+    for label_id in range(1, num_labels):
+        area = stats[label_id, cv2.CC_STAT_AREA]
+        if area < min_area:
+            continue
+        # Filtrar líneas residuales de grilla: si el componente es muy alargado
+        # (aspect ratio > 10) y delgado, probablemente es un residuo de borde
+        comp_w = stats[label_id, cv2.CC_STAT_WIDTH]
+        comp_h = stats[label_id, cv2.CC_STAT_HEIGHT]
+        if comp_w > 0 and comp_h > 0:
+            aspect = max(comp_w / comp_h, comp_h / comp_w)
+            # Calcular "pegajosidad": relación área / área del bounding box
+            bbox_area = comp_w * comp_h
+            fill_ratio = area / bbox_area if bbox_area > 0 else 0
+            # Si es muy alargado Y muy delgado (fill_ratio bajo), es línea de grilla
+            if aspect > 8 and fill_ratio < 0.15:
+                continue
+        mask[labels == label_id] = 255
+
+    cell_img = cv2.bitwise_and(cell_img, mask)
+
+    # Verificar que quede algo de tinta
     coords = cv2.findNonZero(cell_img)
     if coords is None:
         return np.zeros((256, 20), dtype=np.uint8)
 
     bx, by, bw, bh = cv2.boundingRect(coords)
 
-    # Padding horizontal ligero para que la letra no toque exactamente el borde
+    # Padding horizontal
     h_pad = max(1, w // 20)
     start_x = max(0, bx - h_pad)
     end_x = min(cell_img.shape[1], bx + bw + h_pad)
 
-    # Recortar solo horizontalmente (mantener altura completa de la celda)
     glyph_col = cell_img[:, start_x:end_x]
 
     if glyph_col.size == 0 or glyph_col.shape[1] == 0:
         return np.zeros((256, 20), dtype=np.uint8)
 
-    # Redimensionar para que la altura sea exactamente 256, ancho proporcional
+    # Redimensionar a 256px de altura, ancho proporcional
     target_h = 256
     scale = target_h / glyph_col.shape[0]
     target_w = max(1, int(glyph_col.shape[1] * scale))
@@ -276,13 +314,13 @@ def segment_template(image_bytes: bytes, template_type: str = "full") -> Dict[st
         cols, rows = 9, 10
 
     binary = preprocess_image(image_bytes)
-    cells = find_grid_cells(binary, expected_cols=cols, expected_rows=rows)
+    cells, clean_grid = find_grid_cells(binary, expected_cols=cols, expected_rows=rows)
 
     glyphs = {}
     
     for i, char in enumerate(chars):
         if i < len(cells) and cells[i] is not None:
-            glyph = extract_glyph_from_cell(binary, cells[i], char=char)
+            glyph = extract_glyph_from_cell(binary, cells[i], clean_grid, char=char)
             if glyph.size > 0 and np.any(glyph):
                 # Verify bounds before padding
                 if glyph.shape[0] > 0 and glyph.shape[1] > 0:
