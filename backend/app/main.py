@@ -10,6 +10,8 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 import traceback
+import cv2
+import base64
 
 from app.services.segmentation import segment_template
 from app.services.vectorizer import vectorize_glyphs
@@ -35,6 +37,39 @@ app.add_middleware(
 async def health_check():
     """Verifica que la API está corriendo."""
     return {"status": "ok", "message": "Kiru API is running 🖋️"}
+
+
+@app.post("/api/extract")
+async def extract_glyphs(
+    image: UploadFile = File(...),
+    template_type: str = Form(default="full"),
+):
+    """
+    Extrae los caracteres de la plantilla y los retorna como imágenes PNG en base64
+    para que el frontend pueda editarlos individualmente.
+    """
+    try:
+        contents = await image.read()
+        glyphs = segment_template(contents, template_type)
+        
+        extracted_data = {}
+        for char, glyph_img in glyphs.items():
+            if glyph_img is not None and glyph_img.size > 0:
+                # Convertir binario (fondo negro expansivo, texto blanco 255) 
+                # a PNG con fondo transparente y texto negro para el Frontend
+                rgba = cv2.cvtColor(glyph_img, cv2.COLOR_GRAY2BGRA)
+                rgba[:, :, 3] = glyph_img  # The alpha channel is the binary mask 
+                rgba[:, :, 0:3] = 0        # Make the text color black (0,0,0)
+                
+                success, buffer = cv2.imencode(".png", rgba)
+                if success:
+                    encoded = base64.b64encode(buffer).decode("utf-8")
+                    extracted_data[char] = f"data:image/png;base64,{encoded}"
+                    
+        return {"status": "success", "glyphs": extracted_data}
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Error al extraer glifos: {str(e)}")
 
 
 @app.post("/api/generate")

@@ -336,6 +336,15 @@ export default function Sandbox() {
       <div className="template-actions">
         <motion.button
           className="btn-secondary"
+          onClick={() => setStep('editor')}
+          whileTap={{ scale: 0.97 }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <Pencil size={18} /> Editar caracteres individuales
+        </motion.button>
+
+        <motion.button
+          className="btn-secondary"
           onClick={handleNewFont}
           whileTap={{ scale: 0.97 }}
           style={{ display: 'flex', alignItems: 'center', gap: '8px' }}

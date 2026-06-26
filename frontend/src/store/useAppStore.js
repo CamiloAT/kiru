@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 
 const getInitialStep = () => {
   const path = window.location.pathname.replace('/', '');
-  return ['template', 'upload', 'sandbox'].includes(path) ? path : 'template';
+  return ['template', 'upload', 'editor', 'sandbox'].includes(path) ? path : 'template';
 };
 
 const useAppStore = create(
@@ -16,6 +16,7 @@ const useAppStore = create(
       fontBytes: null,   // ArrayBuffer of the generated TTF
       fontName: 'MiLetra',
       templateType: 'full',
+      extractedGlyphs: null, // { [char]: "data:image/png;base64,..." }
 
       // Upload state
       uploadedImage: null,     // File object
@@ -44,13 +45,16 @@ const useAppStore = create(
       setProcessing: (val) => set({ isProcessing: val }),
       setProcessingError: (err) => set({ processingError: err }),
       setFontBytes: (bytes) => set({ fontBytes: bytes }),
+      setExtractedGlyphs: (glyphs) => set({ extractedGlyphs: glyphs }),
+      updateExtractedGlyph: (char, newBase64) => set((state) => ({
+        extractedGlyphs: { ...state.extractedGlyphs, [char]: newBase64 },
+      })),
 
       // Reset everything for a new session
       reset: () => set({
         step: 'template',
         fontBytes: null,
-        fontName: 'MiLetra',
-        templateType: 'full',
+        extractedGlyphs: null,
         uploadedImage: null,
         imagePreview: null,
         isProcessing: false,

@@ -10,11 +10,19 @@ const API_URL = '';
 
 export default function Uploader() {
   const {
-    fontName, templateType, setTemplateType,
-    uploadedImage, imagePreview, setUploadedImage,
-    isProcessing, setProcessing,
-    processingError, setProcessingError,
-    setFontBytes, setStep,
+    uploadedImage,
+    imagePreview,
+    setUploadedImage,
+    fontName,
+    templateType,
+    setTemplateType,
+    setProcessing,
+    setProcessingError,
+    setFontBytes,
+    setExtractedGlyphs,
+    isProcessing,
+    processingError,
+    setStep,
   } = useAppStore();
 
   const [brightness, setBrightness] = useState(100);
@@ -50,11 +58,9 @@ export default function Uploader() {
     try {
       const formData = new FormData();
       formData.append('image', uploadedImage);
-      formData.append('font_name', fontName);
       formData.append('template_type', templateType);
-      formData.append('smooth', 'true');
 
-      const response = await fetch(`${API_URL}/api/generate`, {
+      const response = await fetch(`${API_URL}/api/extract`, {
         method: 'POST',
         body: formData,
       });
@@ -64,10 +70,9 @@ export default function Uploader() {
         throw new Error(err.detail || 'Error al procesar la imagen');
       }
 
-      const blob = await response.blob();
-      const arrayBuffer = await blob.arrayBuffer();
-      setFontBytes(arrayBuffer);
-      setStep('sandbox');
+      const data = await response.json();
+      setExtractedGlyphs(data.glyphs);
+      setStep('editor');
     } catch (err) {
       setProcessingError(err.message);
     } finally {

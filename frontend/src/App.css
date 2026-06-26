@@ -2,111 +2,131 @@
 
 .app-header {
   text-align: center;
-  padding: 48px 0 24px;
+  padding: 28px 0 14px;
 }
 
 .logo {
   display: inline-flex;
   align-items: center;
   gap: 12px;
+  margin-bottom: 20px;
 }
 
 .logo-icon {
-  font-size: 2.4rem;
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px var(--accent-primary-glow));
 }
 
 .logo-text {
   font-family: var(--font-display);
-  font-size: 2.8rem;
+  font-size: 2.2rem;
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  margin: 0;
+  line-height: 1;
 }
 
-.tagline {
-  margin-top: 8px;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  font-weight: 400;
-}
-
-/* ===== STEPS NAV ===== */
-.steps-nav {
+/* ===== STEP INDICATOR ===== */
+.step-indicator {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 24px 0;
-  margin-bottom: 8px;
+  padding: 0 0 8px;
 }
 
 .step-item {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0;
   position: relative;
+  user-select: none;
 }
 
-.step-dot {
+.step-item.clickable {
+  cursor: pointer;
+}
+
+.step-item.clickable:hover .step-circle {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 16px var(--accent-primary-glow);
+  transform: scale(1.08);
+}
+
+.step-item.clickable:hover .step-label {
+  color: var(--text-primary);
+}
+
+.step-circle {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
   background: var(--bg-card);
-  border: 2px solid var(--border-subtle);
-  font-size: 0.85rem;
+  border: 1.5px solid var(--border-subtle);
+  font-size: 0.65rem;
   font-weight: 700;
+  font-family: var(--font-display);
   color: var(--text-muted);
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
 }
 
-.step-item.active .step-dot {
+.step-item.active .step-circle {
   background: var(--accent-gradient);
   border-color: var(--accent-primary);
   color: #fff;
-  box-shadow: 0 0 20px var(--accent-primary-glow);
+  box-shadow: 0 0 14px var(--accent-primary-glow);
+  transform: scale(1.1);
 }
 
-.step-item.completed .step-dot {
+.step-item.completed .step-circle {
   background: var(--success);
   border-color: var(--success);
   color: #fff;
+  box-shadow: 0 0 8px rgba(54, 217, 134, 0.3);
 }
 
 .step-label {
-  font-size: 0.85rem;
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
   transition: color 0.3s;
   white-space: nowrap;
+  margin-left: 6px;
 }
+
 .step-item.active .step-label {
   color: var(--text-primary);
 }
+
 .step-item.completed .step-label {
   color: var(--success);
 }
 
 .step-connector {
-  width: 60px;
-  height: 2px;
+  width: 32px;
+  height: 1.5px;
   background: var(--border-subtle);
-  margin: 0 12px;
-  transition: background 0.3s;
+  margin: 0 8px;
+  border-radius: 1px;
+  transition: background 0.4s;
 }
 
-.step-item.completed .step-connector {
+.step-connector.completed {
   background: var(--success);
 }
 
 /* ===== MAIN CONTENT ===== */
-.main-content {
+.app-content {
   margin-bottom: 40px;
   animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -117,4 +137,46 @@
   padding: 24px 0 48px;
   color: var(--text-muted);
   font-size: 0.85rem;
+}
+
+.text-accent {
+  color: var(--accent-secondary);
+}
+
+/* ===== SHARED COMPONENT STYLES ===== */
+
+.template-header {
+  text-align: center;
+}
+.template-header h2 {
+  font-size: 2rem;
+  margin: 8px 0;
+  background: var(--accent-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.template-header p {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+.step-badge {
+  display: inline-block;
+  padding: 4px 16px;
+  background: var(--accent-gradient-subtle);
+  border: 1px solid var(--border-accent);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.template-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
 }
