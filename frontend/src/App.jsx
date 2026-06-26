@@ -57,8 +57,8 @@ function App() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           >
-            <img src="/kiru-logo.png" alt="Kiru Logo" className="logo-icon" />
-            <h1 className="logo-text">Kiru</h1>
+            <img src="/kiru-logo.png" alt="K" className="logo-icon" />
+            <h1 className="logo-text">iru</h1>
           </motion.div>
 
           <motion.nav
