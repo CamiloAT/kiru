@@ -163,11 +163,11 @@
 
 .step-badge {
   display: inline-block;
-  padding: 4px 16px;
+  padding: 3px 12px;
   background: var(--accent-gradient-subtle);
   border: 1px solid var(--border-accent);
   border-radius: 20px;
-  font-size: 0.8rem;
+  font-size: 0.65rem;
   font-weight: 600;
   color: var(--accent-primary);
   letter-spacing: 0.5px;
