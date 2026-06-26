@@ -93,7 +93,7 @@ export default function Uploader() {
       >
         <div className="upl-top">
           <span className="step-badge">Paso 2</span>
-          <h2 className="upl-title">Subí tu Plantilla</h2>
+          <h2 className="upl-title">Sube tu Plantilla</h2>
           <p className="upl-subtitle">Tomale una foto o escaneá la plantilla que llenaste.</p>
         </div>
 

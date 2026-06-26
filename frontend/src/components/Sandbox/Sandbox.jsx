@@ -107,7 +107,7 @@ export default function Sandbox() {
       <div className="sbx-top">
         <span className="step-badge">Paso 4</span>
         <h2 className="sbx-title">¡Tu fuente está lista! <Sparkles size={22} /></h2>
-        <p className="sbx-subtitle">Escribí cualquier texto para probarla con tu letra.</p>
+        <p className="sbx-subtitle">Escribe cualquier texto para probarla con tu letra.</p>
       </div>
 
       {/* Font Name */}

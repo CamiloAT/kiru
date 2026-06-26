@@ -266,7 +266,7 @@ export default function Editor() {
     >
       <div className="template-header">
         <span className="step-badge">Paso 3</span>
-        <h2>Afinar Letras</h2>
+        <h2 style={{ background: 'none', WebkitTextFillColor: 'var(--text-primary)' }}>Afinar Letras</h2>
         <p>Revisa cada carácter. Ajusta la posición, borra imperfecciones, dibuja detalles o escala si es necesario.</p>
       </div>
 

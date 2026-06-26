@@ -110,6 +110,10 @@ button {
   position: relative;
   overflow: hidden;
 }
+.btn-primary svg {
+  color: #fff;
+}
+
 .btn-primary::before {
   content: '';
   position: absolute;
