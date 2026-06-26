@@ -1,21 +1,30 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Type, FileText, Cloud, Bold, Italic, Underline, Palette, Check } from 'lucide-react';
+import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Bold, Italic, Underline, Palette, Monitor, Cloud, PenTool, Sun, Moon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Sandbox.css';
 
+const SAMPLE_TEXTS = {
+  pangram: 'El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.',
+  pangram2: 'Jovencillo emponzoñado de whisky, qué figurota exhibe.\nBeethoven toca el piano de noche en la azotea con luz de luna.',
+  alphabet: 'A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z\na b c d e f g h i j k l m n ñ o p q r s t u v w x y z\n0 1 2 3 4 5 6 7 8 9',
+  numbers: '0123456789\n10 25 42 100 2025',
+  symbols: '.,:;!¡?¿\'"()-_+=*/\\|@#$%&<>[]{}~^`',
+};
+
 export default function Sandbox() {
   const { fontBytes, fontName, setFontName, templateType, setStep, reset } = useAppStore();
-  const [text, setText] = useState('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.');
+  const [text, setText] = useState(SAMPLE_TEXTS.pangram);
   const [fontSize, setFontSize] = useState(32);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [formatState, setFormatState] = useState({ bold: false, italic: false, underline: false });
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
-  const [selectedColor, setSelectedColor] = useState('#000000');
+  const [selectedColor, setSelectedColor] = useState('#ffffff');
+  const [darkCanvas, setDarkCanvas] = useState(false);
   const previewRef = useRef(null);
-  
+
   const updateFormatState = useCallback(() => {
     setFormatState({
       bold: document.queryCommandState('bold'),
@@ -24,10 +33,8 @@ export default function Sandbox() {
     });
   }, []);
 
-  // Load the generated font into the document
   useEffect(() => {
     if (!fontBytes) return;
-
     const loadFont = async () => {
       try {
         const fontFace = new FontFace('KiruUserFont', fontBytes);
@@ -38,15 +45,10 @@ export default function Sandbox() {
         console.error('Error loading font:', err);
       }
     };
-
     loadFont();
-
-    // Cleanup
     return () => {
       document.fonts.forEach((font) => {
-        if (font.family === 'KiruUserFont') {
-          document.fonts.delete(font);
-        }
+        if (font.family === 'KiruUserFont') document.fonts.delete(font);
       });
     };
   }, [fontBytes]);
@@ -57,15 +59,22 @@ export default function Sandbox() {
     previewRef.current?.focus();
   };
 
-  const handleSampleText = (newText) => {
+  // Initialize editor content once
+  useEffect(() => {
+    if (previewRef.current && fontLoaded) {
+      previewRef.current.innerHTML = SAMPLE_TEXTS.pangram.replace(/\n/g, '<br/>');
+    }
+  }, [fontLoaded]);
+
+  const handleSampleText = (key) => {
     if (previewRef.current) {
-      previewRef.current.innerText = newText;
+      previewRef.current.innerHTML = SAMPLE_TEXTS[key].replace(/\n/g, '<br/>');
+      previewRef.current.focus();
     }
   };
 
   const handleDownload = () => {
     if (!fontBytes) return;
-
     const blob = new Blob([fontBytes], { type: 'font/ttf' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -75,109 +84,79 @@ export default function Sandbox() {
     URL.revokeObjectURL(url);
   };
 
-  const handleNewFont = () => {
-    reset();
-  };
-
   if (!fontBytes) {
     return (
       <div className="sandbox-empty">
         <p>No hay fuente generada aún.</p>
-        <button className="btn-primary flex items-center gap-2" onClick={() => setStep('upload')}>
+        <button className="btn-primary" onClick={() => setStep('upload')}>
           <ArrowLeft size={18} /> Ir a subir plantilla
         </button>
       </div>
     );
   }
 
+  const hasExtended = templateType === 'extended' || templateType === 'full';
+
   return (
     <motion.div
-      className="sandbox-section"
+      className="sbx"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="template-header">
-        <span className="step-badge">Paso 3</span>
-        <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-          ¡Tu Fuente está Lista! <Sparkles size={24} className="text-accent" />
-        </h2>
-        <p>Escribe cualquier texto para probarlo con tu letra.</p>
+      <div className="sbx-top">
+        <span className="step-badge">Paso 4</span>
+        <h2 className="sbx-title">¡Tu fuente está lista! <Sparkles size={22} /></h2>
+        <p className="sbx-subtitle">Escribí cualquier texto para probarla con tu letra.</p>
       </div>
 
-      {/* Toolbar & Controls */}
-      <div className="sandbox-controls" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', background: 'var(--bg-secondary)', padding: '12px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', marginBottom: '1rem', flexDirection: 'row' }}>
-        <div className="control-group format-toolbar" style={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '12px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <button className={`format-btn ${formatState.bold ? 'active' : ''}`} onClick={() => formatText('bold')} title="Negrita (Ctrl/Cmd + B)">
-              <Bold size={18} />
+      {/* Font Name */}
+      <div className="sbx-name">
+        <label className="sbx-name-label">Nombre de tu fuente</label>
+        <input
+          type="text"
+          value={fontName}
+          onChange={(e) => setFontName(e.target.value)}
+          placeholder="Ej: Mi Letra Bonita"
+          maxLength={30}
+          className="sbx-name-input"
+        />
+      </div>
+
+      {/* Toolbar */}
+      <div className="sbx-toolbar">
+        <div className="sbx-toolbar-left">
+          <button className={`sbx-fmt ${formatState.bold ? 'sbx-fmt--active' : ''}`} onClick={() => formatText('bold')} title="Negrita">
+            <Bold size={16} />
+          </button>
+          <button className={`sbx-fmt ${formatState.italic ? 'sbx-fmt--active' : ''}`} onClick={() => formatText('italic')} title="Cursiva">
+            <Italic size={16} />
+          </button>
+          <button className={`sbx-fmt ${formatState.underline ? 'sbx-fmt--active' : ''}`} onClick={() => formatText('underline')} title="Subrayado">
+            <Underline size={16} />
+          </button>
+          <div className="sbx-toolbar-sep" />
+          <div className="sbx-color-wrap">
+            <button className="sbx-fmt" onClick={() => setIsColorPickerOpen(!isColorPickerOpen)} title="Color">
+              <Palette size={16} />
             </button>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+B</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <button className={`format-btn ${formatState.italic ? 'active' : ''}`} onClick={() => formatText('italic')} title="Cursiva (Ctrl/Cmd + I)">
-              <Italic size={18} />
-            </button>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+I</span>
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
-            <button className={`format-btn ${formatState.underline ? 'active' : ''}`} onClick={() => formatText('underline')} title="Subrayado (Ctrl/Cmd + U)">
-              <Underline size={18} />
-            </button>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Ctrl+U</span>
-          </div>
-          <div style={{ width: '1px', height: '24px', background: 'var(--border-subtle)', margin: '0 8px' }}></div>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px', position: 'relative' }}>
-            <button 
-              className="format-btn" 
-              onClick={() => setIsColorPickerOpen(!isColorPickerOpen)}
-              title="Color del texto"
-            >
-              <Palette size={18} />
-            </button>
-            <span style={{ fontSize: '0.65rem', color: 'var(--text-secondary)' }}>Color</span>
-            
             <AnimatePresence>
               {isColorPickerOpen && (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                <motion.div
+                  className="sbx-color-pop"
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  style={{ 
-                    position: 'absolute', 
-                    top: '100%', 
-                    left: 0, 
-                    marginTop: '8px', 
-                    background: 'var(--bg-secondary)', 
-                    border: '1px solid var(--border-subtle)', 
-                    borderRadius: 'var(--radius-md)', 
-                    padding: '16px', 
-                    zIndex: 50,
-                    boxShadow: 'var(--shadow-card)',
-                    width: '227px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '12px'
-                  }}
                 >
-                  <div style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>Color del texto</div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                    {['#000000', '#8E8E93', '#FF3B30', '#FF9500', '#FFCC00', '#34C759', '#1E8449', '#32ADE6', '#007AFF', '#AF52DE', '#FF2D55', '#FF69B4'].map(color => (
-                      <button 
-                        key={color}
-                        onClick={() => {
-                          setSelectedColor(color);
-                          formatText('foreColor', color);
-                          setIsColorPickerOpen(false);
-                        }}
-                        style={{ 
-                          width: '32px', height: '32px', borderRadius: '50%', background: color, 
-                          border: selectedColor === color ? '2px solid var(--text-primary)' : '2px solid transparent',
-                          cursor: 'pointer', transition: 'transform 0.1s'
-                        }}
-                        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.1)'}
-                        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
+                  <span className="sbx-color-title">Color</span>
+                  <div className="sbx-color-grid">
+                    {['#ffffff', '#9898b0', '#ff3b30', '#ff9500', '#ffcc00', '#34c759', '#32ade6', '#007aff', '#af52de', '#ff2d55', '#ff69b4', '#000000'].map(c => (
+                      <button
+                        key={c}
+                        className="sbx-color-swatch"
+                        style={{ background: c, border: selectedColor === c ? '2px solid var(--accent-primary)' : '2px solid transparent' }}
+                        onClick={() => { setSelectedColor(c); formatText('foreColor', c); setIsColorPickerOpen(false); }}
                       />
                     ))}
                   </div>
@@ -186,179 +165,153 @@ export default function Sandbox() {
             </AnimatePresence>
           </div>
         </div>
-        
-        <div className="control-group" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', fontWeight: 600 }}>
-            <Ruler size={16} /> Tamaño: {fontSize}px
-          </label>
-          <input
-            type="range" min="14" max="80" value={fontSize}
-            onChange={(e) => setFontSize(Number(e.target.value))}
-            style={{ width: '120px' }}
-          />
+        <div className="sbx-toolbar-right">
+          <button
+            className={`sbx-fmt ${darkCanvas ? 'sbx-fmt--active' : ''}`}
+            onClick={() => setDarkCanvas(!darkCanvas)}
+            title={darkCanvas ? 'Fondo claro' : 'Fondo oscuro'}
+          >
+            {darkCanvas ? <Sun size={16} /> : <Moon size={16} />}
+          </button>
+          <div className="sbx-toolbar-sep" />
+          <Ruler size={14} />
+          <span className="sbx-size-val">{fontSize}px</span>
+          <input type="range" min="14" max="80" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="sbx-size-slider" />
         </div>
       </div>
 
-      {/* Editor Area */}
-      <div className="sandbox-preview-area" style={{ padding: '0', display: 'flex', flexDirection: 'column' }}>
+      {/* Editor */}
+      <div className={`sbx-editor-wrap ${darkCanvas ? 'sbx-editor-wrap--dark' : ''}`}>
         <div
           ref={previewRef}
-          contentEditable={true}
-          suppressContentEditableWarning={true}
+          contentEditable
+          suppressContentEditableWarning
           onKeyUp={updateFormatState}
           onMouseUp={updateFormatState}
-          className="sandbox-textarea rich-editor"
+          className="sbx-editor"
           style={{
-            flex: 1,
             fontFamily: fontLoaded ? "'KiruUserFont', serif" : 'serif',
             fontSize: `${fontSize}px`,
-            minHeight: '200px',
-            border: 'none',
-            borderRadius: 'var(--radius-lg)',
-            padding: '40px',
-            outline: 'none',
-            whiteSpace: 'pre-wrap',
-            background: '#ffffff',
-            color: '#000000',
-            boxShadow: 'none'
           }}
-          onInput={(e) => {
-            if (e.target.innerText.trim() === '') {
-              // Ensure it doesn't collapse entirely
-            }
-          }}
-        >
-          El veloz murciélago hindú comía feliz cardillo y kiwi.<br/>La cigüeña tocaba el saxofón detrás del palenque de paja.
-        </div>
-      </div>
-
-      {/* Font Name Input */}
-      <div className="font-name-input" style={{ marginBottom: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-        <label htmlFor="fontNameInput" style={{ fontWeight: 600, fontSize: '0.9rem' }}>Nombre de tu fuente</label>
-        <input
-          id="fontNameInput"
-          type="text"
-          value={fontName}
-          onChange={(e) => setFontName(e.target.value)}
-          placeholder="Ej: Mi Letra Bonita"
-          maxLength={30}
-          style={{ padding: '12px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-sm)', fontSize: '1rem', outline: 'none' }}
         />
       </div>
 
       {/* Sample Texts */}
-      <div className="sample-texts">
-        <span className="sample-label">Textos de prueba:</span>
-        <button className="sample-btn" onClick={() => handleSampleText('A B C D E F G H I J K L M N Ñ O P Q R S T U V W X Y Z\na b c d e f g h i j k l m n ñ o p q r s t u v w x y z\n0 1 2 3 4 5 6 7 8 9')}>
-          Alfabeto y Números
-        </button>
-        <button className="sample-btn" onClick={() => handleSampleText('El veloz murciélago hindú comía feliz cardillo y kiwi.\nLa cigüeña tocaba el saxofón detrás del palenque de paja.')}>
-          Pangrama
-        </button>
-        <button className="sample-btn" onClick={() => handleSampleText(TEMPLATE_CONFIGS[templateType]?.chars?.join(' ') || 'A B C')}>
-          Todos los caracteres
-        </button>
+      <div className="sbx-samples">
+        <span className="sbx-samples-label">Textos de prueba:</span>
+        <button className="sbx-sample" onClick={() => handleSampleText('alphabet')}>Alfabeto y Números</button>
+        <button className="sbx-sample" onClick={() => handleSampleText('pangram')}>Pangrama</button>
+        <button className="sbx-sample" onClick={() => handleSampleText('pangram2')}>Pangrama 2</button>
+        {hasExtended && (
+          <>
+            <button className="sbx-sample" onClick={() => handleSampleText('symbols')}>Símbolos</button>
+            <button className="sbx-sample" onClick={() => handleSampleText('numbers')}>Números</button>
+          </>
+        )}
       </div>
 
-      {/* Installation Guide */}
-      <div className="install-guide" style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
-        <div 
-          onClick={() => setIsGuideOpen(!isGuideOpen)}
-          style={{ padding: '16px 20px', cursor: 'pointer', fontWeight: 600, fontSize: '0.95rem', color: isGuideOpen ? 'var(--text-primary)' : 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '8px', transition: 'color 0.2s', userSelect: 'none' }}
-        >
-          <BookOpen size={18} /> ¿Cómo instalar y usar mi fuente?
-        </div>
-        
-        <motion.div
-          initial={false}
-          animate={{ height: isGuideOpen ? 'auto' : 0, opacity: isGuideOpen ? 1 : 0 }}
-          transition={{ duration: 0.3, ease: 'easeInOut' }}
-          style={{ overflow: 'hidden' }}
-        >
-          <div className="install-content-wrapper">
-            <div className="install-content" style={{ display: 'grid', gap: '16px', padding: '0 20px 20px' }}>
-              <div className="install-os card-inner" style={{ borderLeft: '4px solid var(--accent-primary)', paddingLeft: '16px' }}>
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 88 88">
-                  <path fill="var(--accent-primary)" d="M0 12.402l35.687-4.86.016 34.423-35.67.203zm35.67 33.529l.028 34.453L0 75.44v-31.84zm4.326-39.02L87.314 0v41.26l-47.318.376zm47.318 39.897v41.21l-47.329-6.678v-34.9z"/>
-                </svg>
-                Windows (Word, PowerPoint, etc.)
-              </h4>
-              <ol style={{ paddingLeft: '24px', margin: 0, fontSize: '0.85rem', lineHeight: '1.6' }}>
-                <li>Haz clic en el botón <strong>Descargar</strong> abajo para guardar el archivo <code>.ttf</code>.</li>
-                <li>Abre la carpeta donde se descargó.</li>
-                <li>Haz <strong>doble clic</strong> en el archivo <code>.ttf</code>.</li>
-                <li>Se abrirá una ventana; haz clic en el botón <strong>Instalar</strong> en la parte superior.</li>
-                <li>Abre Word o PowerPoint y busca tu fuente ("{fontName || 'MiLetra'}") en la lista de tipos de letra.</li>
-              </ol>
-            </div>
+      {/* Install Guide */}
+      <div className="sbx-guide">
+        <button className="sbx-guide-header" onClick={() => setIsGuideOpen(!isGuideOpen)}>
+          <BookOpen size={18} />
+          <span>¿Cómo instalo y uso mi fuente?</span>
+          <svg className={`sbx-guide-chevron ${isGuideOpen ? 'sbx-guide-chevron--open' : ''}`} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
+        </button>
+        <AnimatePresence>
+          {isGuideOpen && (
+            <motion.div
+              className="sbx-guide-body"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+            >
+              <div className="sbx-guide-grid">
+                {/* Windows */}
+                <div className="sbx-guide-card">
+                  <div className="sbx-guide-card-head sbx-guide-card-head--win">
+                    <Monitor size={16} />
+                    <span>Windows</span>
+                  </div>
+                  <ol className="sbx-guide-steps">
+                    <li>Hacé clic en <strong>Descargar</strong> para guardar el <code>.ttf</code></li>
+                    <li>Abre la carpeta de descargas</li>
+                    <li>Haz <strong>doble clic</strong> en el archivo</li>
+                    <li>Clic en <strong>Instalar</strong> arriba</li>
+                    <li>Buscá "{fontName || 'MiLetra'}" en Word, PowerPoint, etc.</li>
+                  </ol>
+                </div>
 
-            <div className="install-os card-inner" style={{ borderLeft: '4px solid var(--accent-primary)', paddingLeft: '16px' }}>
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 384 512">
-                  <path fill="var(--accent-primary)" d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
-                </svg>
-                macOS (Pages, Word para Mac)
-              </h4>
-              <ol style={{ paddingLeft: '24px', margin: 0, fontSize: '0.85rem', lineHeight: '1.6' }}>
-                <li>Descarga el archivo <code>.ttf</code>.</li>
-                <li>Haz <strong>doble clic</strong> en él.</li>
-                <li>Se abrirá la aplicación "Catálogo Tipográfico" (Font Book).</li>
-                <li>Haz clic en <strong>Instalar fuente</strong>.</li>
-              </ol>
-            </div>
+                {/* macOS */}
+                <div className="sbx-guide-card">
+                  <div className="sbx-guide-card-head sbx-guide-card-head--mac">
+                    <svg width="16" height="16" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+                    <span>macOS</span>
+                  </div>
+                  <ol className="sbx-guide-steps">
+                    <li>Descargá el archivo <code>.ttf</code></li>
+                    <li>Haz <strong>doble clic</strong> en él</li>
+                    <li>Se abre "Catálogo Tipográfico"</li>
+                    <li>Clic en <strong>Instalar fuente</strong></li>
+                  </ol>
+                </div>
 
-            <div className="install-os card-inner" style={{ borderLeft: '4px solid var(--accent-primary)', paddingLeft: '16px' }}>
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                <Cloud size={16} color="var(--accent-primary)" /> Google Docs / Google Workspace
-              </h4>
-              <div style={{ fontSize: '0.85rem', lineHeight: '1.6', padding: '12px 16px', backgroundColor: 'var(--accent-primary-glow)', borderRadius: '8px', border: '1px solid var(--border-accent)' }}>
-                <strong>Nota importante:</strong> Google Docs no permite subir fuentes personalizadas directamente por restricciones de seguridad. Si quieres usar tu letra en un documento en la nube, te recomendamos usar <strong>Word Online</strong> o exportar tu texto como imagen.
+                {/* iPad */}
+                <div className="sbx-guide-card">
+                  <div className="sbx-guide-card-head sbx-guide-card-head--pad">
+                    <PenTool size={16} />
+                    <span>iPad (Procreate / GoodNotes)</span>
+                  </div>
+                  <ol className="sbx-guide-steps">
+                    <li>Guardá el <code>.ttf</code> en Archivos del iPad</li>
+                    <li><strong>Procreate:</strong> Acciones → Añadir → Añadir texto → tocá el nombre de la fuente e importá</li>
+                    <li><strong>GoodNotes:</strong> Usá iFont para instalar el perfil y luego úsala</li>
+                  </ol>
+                </div>
+
+                {/* Google Docs */}
+                <div className="sbx-guide-card">
+                  <div className="sbx-guide-card-head sbx-guide-card-head--gdoc">
+                    <Cloud size={16} />
+                    <span>Google Docs</span>
+                  </div>
+                  <div className="sbx-guide-note">
+                    Google Docs no permite subir fuentes personalizadas. Usá <strong>Word Online</strong> o exportá tu texto como imagen.
+                  </div>
+                </div>
+
+                {/* Canva */}
+                <div className="sbx-guide-card">
+                  <div className="sbx-guide-card-head sbx-guide-card-head--canva">
+                    <svg width="16" height="16" viewBox="0 0 48 48"><defs><linearGradient id="canvaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00c4cc"/><stop offset="100%" stopColor="#7b2ff7"/></linearGradient></defs><circle cx="24" cy="24" r="24" fill="url(#canvaGrad)"/><text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="30" fontWeight="700" fontFamily="Arial,sans-serif">C</text></svg>
+                    <span>Canva</span>
+                  </div>
+                  <ol className="sbx-guide-steps">
+                    <li>Descargá el archivo <code>.ttf</code> en tu computadora</li>
+                    <li>Abrí Canva y creá un diseño nuevo</li>
+                    <li>Agregá un elemento de <strong>Texto</strong></li>
+                    <li>En el selector de fuentes, escribí el nombre de tu fuente</li>
+                    <li>Si no aparece, subila desde <strong>Subir fuentes</strong> en la pestaña de fuentes</li>
+                    <li>Seleccioná tu fuente y ¡escribí!</li>
+                  </ol>
+                </div>
               </div>
-            </div>
-
-            <div className="install-os card-inner" style={{ borderLeft: '4px solid var(--accent-primary)', paddingLeft: '16px' }}>
-              <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                <Pencil size={16} color="var(--accent-primary)" /> Procreate / GoodNotes (iPad)
-              </h4>
-              <ol style={{ paddingLeft: '24px', margin: 0, fontSize: '0.85rem', lineHeight: '1.6' }}>
-                <li>Guarda el <code>.ttf</code> en la app <strong>Archivos</strong> de tu iPad.</li>
-                <li><strong>Procreate:</strong> Ve a Acciones (icono de llave inglesa) → Añadir → Añadir texto. Toca el nombre de la fuente actual e importa tu archivo.</li>
-                <li><strong>GoodNotes:</strong> Usa una app gratuita como iFont para instalar el perfil de la fuente y luego úsala.</li>
-              </ol>
-            </div>
-          </div>
-        </div>
-        </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Actions */}
-      <div className="template-actions">
-        <motion.button
-          className="btn-secondary"
-          onClick={() => setStep('editor')}
-          whileTap={{ scale: 0.97 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
-          <Pencil size={18} /> Editar caracteres individuales
+      <div className="sbx-actions">
+        <motion.button className="btn-secondary" onClick={() => setStep('editor')} whileTap={{ scale: 0.97 }}>
+          <Pencil size={18} /> Editar caracteres
         </motion.button>
-
-        <motion.button
-          className="btn-secondary"
-          onClick={handleNewFont}
-          whileTap={{ scale: 0.97 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
+        <motion.button className="btn-secondary" onClick={() => reset()} whileTap={{ scale: 0.97 }}>
           <RefreshCcw size={18} /> Crear otra fuente
         </motion.button>
-
-        <motion.button
-          className="btn-primary download-btn"
-          onClick={handleDownload}
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.97 }}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
-        >
+        <motion.button className="btn-primary sbx-download" onClick={handleDownload} whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
           <Download size={18} /> Descargar {fontName || 'MiLetra'}.ttf
         </motion.button>
       </div>
