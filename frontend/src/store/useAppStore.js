@@ -23,6 +23,7 @@ const useAppStore = create(
       imagePreview: null,      // Base64 data URL for preview
       isProcessing: false,
       processingError: null,
+      isGenerating: false,
 
       // Actions
       setStep: (step) => set({ step }),
@@ -44,6 +45,7 @@ const useAppStore = create(
 
       setProcessing: (val) => set({ isProcessing: val }),
       setProcessingError: (err) => set({ processingError: err }),
+      setGenerating: (val) => set({ isGenerating: val }),
       setFontBytes: (bytes) => set({ fontBytes: bytes }),
       setExtractedGlyphs: (glyphs) => set({ extractedGlyphs: glyphs }),
       updateExtractedGlyph: (char, newBase64) => set((state) => ({
@@ -59,6 +61,7 @@ const useAppStore = create(
         imagePreview: null,
         isProcessing: false,
         processingError: null,
+        isGenerating: false,
       }),
     }),
     {

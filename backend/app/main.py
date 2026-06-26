@@ -2,15 +2,20 @@
 main.py — API principal de Kiru.
 
 Endpoints:
-- POST /api/generate  → Recibe imagen, procesa y devuelve fuente TTF
-- GET  /api/health    → Health check
+- POST /api/generate             → Recibe imagen, procesa y devuelve fuente TTF
+- POST /api/generate-from-glyphs → Recibe glyphs editados (base64) y devuelve fuente TTF
+- POST /api/extract              → Extrae glyphs de la plantilla como base64
+- GET  /api/health               → Health check
 """
 
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from pydantic import BaseModel
+from typing import Dict
 import traceback
 import cv2
+import numpy as np
 import base64
 
 from app.services.segmentation import segment_template
@@ -128,6 +133,102 @@ async def generate_font(
         raise HTTPException(
             status_code=500,
             detail=f"Error procesando la imagen: {str(e)}"
+        )
+
+
+def decode_base64_glyph(b64_data: str) -> np.ndarray:
+    """
+    Convierte un base64 RGBA PNG del frontend a un array binario 2D listo para el vectorizer.
+    El frontend envía RGBA donde alpha=255 donde hay tinta, 0 donde fondo transparente.
+    Retorna: np.ndarray uint8 de shape (256, W) con ink=255, bg=0, borde de 10px.
+    """
+    raw = base64.b64decode(b64_data.split(",")[1])
+    nparr = np.frombuffer(raw, np.uint8)
+    rgba = cv2.imdecode(nparr, cv2.IMREAD_UNCHANGED)
+
+    if rgba is None or rgba.size == 0:
+        raise ValueError("No se pudo decodificar el glyph")
+
+    # Extraer canal alpha como máscara de tinta
+    if len(rgba.shape) == 3 and rgba.shape[2] == 4:
+        glyph = rgba[:, :, 3]
+    elif len(rgba.shape) == 2:
+        glyph = rgba
+    else:
+        glyph = cv2.cvtColor(rgba, cv2.COLOR_BGR2GRAY)
+
+    # Redimensionar a height=256 manteniendo proporción
+    h, w = glyph.shape
+    if h == 0 or w == 0:
+        raise ValueError("Glyph vacío")
+    scale = 256 / h
+    target_w = max(1, int(w * scale))
+    glyph = cv2.resize(glyph, (target_w, 256), interpolation=cv2.INTER_AREA)
+
+    # Re-umbralizar para asegurar binario tras interpolación
+    _, glyph = cv2.threshold(glyph, 127, 255, cv2.THRESH_BINARY)
+
+    # Añadir borde de 10px de cero
+    glyph = cv2.copyMakeBorder(glyph, 10, 10, 10, 10, cv2.BORDER_CONSTANT, value=0)
+
+    return glyph
+
+
+class GenerateFromGlyphsRequest(BaseModel):
+    glyphs: Dict[str, str]  # { char: "data:image/png;base64,..." }
+    font_name: str = "MiLetra"
+    template_type: str = "full"
+    smooth: bool = True
+
+
+@app.post("/api/generate-from-glyphs")
+async def generate_from_glyphs(request: GenerateFromGlyphsRequest):
+    """
+    Recibe glyphs editados del frontend (base64 RGBA PNG) y genera una fuente TTF.
+    Omita el endpoint de segmentación y va directo a vectorización + ensamblaje.
+    """
+    try:
+        if not request.glyphs:
+            raise HTTPException(status_code=400, detail="No se enviaron glyphs")
+
+        # 1. Decodificar y convertir cada glyph base64 → array binario
+        decoded = {}
+        for char, b64_data in request.glyphs.items():
+            try:
+                decoded[char] = decode_base64_glyph(b64_data)
+            except Exception as e:
+                print(f"Advertencia: glyph '{char}' no se pudo decodificar: {e}")
+                continue
+
+        if not decoded:
+            raise HTTPException(status_code=400, detail="Ningún glyph pudo ser procesado")
+
+        # 2. Vectorizar
+        vectorized = vectorize_glyphs(decoded, smooth=request.smooth)
+
+        # 3. Ensamblar TTF
+        safe_name = "".join(c for c in request.font_name if c.isalnum() or c in "-_ ")[:30]
+        ttf_bytes = build_font(
+            vectorized,
+            font_name=safe_name.replace(" ", ""),
+            family_name=safe_name or "MiLetra",
+        )
+
+        return Response(
+            content=ttf_bytes,
+            media_type="font/ttf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{safe_name or "MiLetra"}.ttf"'
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error generando fuente: {str(e)}"
         )
 
 

@@ -15,7 +15,7 @@ const TOOLS = [
 const CANVAS_SIZE = 300;
 
 export default function Editor() {
-  const { templateType, extractedGlyphs, updateExtractedGlyph, setStep } = useAppStore();
+  const { templateType, extractedGlyphs, updateExtractedGlyph, setStep, fontName, setFontBytes, isGenerating, setGenerating } = useAppStore();
   const [selectedChar, setSelectedChar] = useState(null);
   const [activeTool, setActiveTool] = useState('move');
   const [brushSize, setBrushSize] = useState(20);
@@ -213,6 +213,36 @@ export default function Editor() {
   const closeModal = () => {
     setShowConfirm(false);
     setSelectedChar(null);
+  };
+
+  // ===== GENERATE FONT =====
+  const handleGenerateFont = async () => {
+    if (!extractedGlyphs || Object.keys(extractedGlyphs).length === 0) return;
+    setGenerating(true);
+    try {
+      const response = await fetch('/api/generate-from-glyphs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          glyphs: extractedGlyphs,
+          font_name: fontName || 'MiLetra',
+          template_type: templateType,
+          smooth: true,
+        }),
+      });
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({ detail: 'Error al generar la fuente' }));
+        throw new Error(err.detail || 'Error al generar la fuente');
+      }
+      const blob = await response.blob();
+      const arrayBuffer = await blob.arrayBuffer();
+      setFontBytes(arrayBuffer);
+      setStep('sandbox');
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const getCanvasClassName = () => {
@@ -425,8 +455,16 @@ export default function Editor() {
         <button className="btn-secondary flex items-center gap-2" onClick={() => setStep('upload')}>
           <ArrowLeft size={18} /> Volver
         </button>
-        <button className="btn-primary flex items-center gap-2" onClick={() => setStep('sandbox')}>
-          Generar Fuente Final <Save size={18} />
+        <button
+          className="btn-primary flex items-center gap-2"
+          onClick={handleGenerateFont}
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <><span className="spinner" /> Generando...</>
+          ) : (
+            <>Generar Fuente Final <Save size={18} /></>
+          )}
         </button>
       </div>
     </motion.div>
