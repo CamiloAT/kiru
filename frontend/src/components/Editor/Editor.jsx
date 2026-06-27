@@ -12,7 +12,7 @@ const TOOLS = [
   { id: 'scale', label: 'Escalar', icon: ZoomIn },
 ];
 
-const CANVAS_SIZE = 300;
+const CANVAS_SIZE = 240;
 
 export default function Editor() {
   const { templateType, extractedGlyphs, updateExtractedGlyph, setStep, fontName, setFontBytes, isGenerating, setGenerating } = useAppStore();
@@ -362,9 +362,9 @@ export default function Editor() {
           >
             <motion.div
               className="char-modal-content"
-              initial={{ scale: 0.74, y: 16 }}
-              animate={{ scale: 0.8, y: 0 }}
-              exit={{ scale: 0.74, y: 16 }}
+              initial={{ scale: 0.92, y: 16 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.92, y: 16 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -386,7 +386,7 @@ export default function Editor() {
                     className={`modal-tool-tab ${activeTool === id ? 'active' : ''}`}
                     onClick={() => setActiveTool(id)}
                   >
-                    <Icon size={15} />
+                    <Icon size={13} />
                     <span>{label}</span>
                   </button>
                 ))}
@@ -504,7 +504,6 @@ export default function Editor() {
               exit={{ scale: 0.9, y: 0 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="confirm-icon">?</div>
               <h4>Confirmar guardado</h4>
               <p>Se guardará el cambio en <b>{selectedChar}</b>. Deseas continuar?</p>
               <div className="confirm-actions">
