@@ -12,11 +12,13 @@ from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from pydantic import BaseModel
-from typing import Dict
+from typing import Dict, Optional
 import traceback
 import cv2
 import numpy as np
 import base64
+import hashlib
+import time
 
 from app.services.segmentation import segment_template
 from app.services.vectorizer import vectorize_glyphs, normalize_glyphs
@@ -37,6 +39,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Cache para evitar re-vectorizar en cada cambio de padding
+_vectorize_cache: Dict[str, Dict] = {}
+_cache_max = 5
 
 @app.get("/api/health")
 async def health_check():
@@ -182,40 +187,54 @@ class GenerateFromGlyphsRequest(BaseModel):
     font_name: str = "MiLetra"
     template_type: str = "full"
     smooth: bool = True
+    padding_ratio: Optional[float] = None
 
 
 @app.post("/api/generate-from-glyphs")
 async def generate_from_glyphs(request: GenerateFromGlyphsRequest):
     """
     Recibe glyphs editados del frontend (base64 RGBA PNG) y genera una fuente TTF.
-    Omita el endpoint de segmentación y va directo a vectorización + ensamblaje.
+    Cachea la vectorización para que cambios de solo padding sean instantáneos.
     """
     try:
         if not request.glyphs:
             raise HTTPException(status_code=400, detail="No se enviaron glyphs")
 
-        # 1. Decodificar y convertir cada glyph base64 → array binario
-        decoded = {}
-        for char, b64_data in request.glyphs.items():
-            try:
-                decoded[char] = decode_base64_glyph(b64_data)
-            except Exception as e:
-                print(f"Advertencia: glyph '{char}' no se pudo decodificar: {e}")
-                continue
+        # Cache key: hash of all glyph data
+        raw = "".join(f"{k}:{v[:50]}" for k, v in sorted(request.glyphs.items()))
+        cache_key = hashlib.md5(raw.encode()).hexdigest()
 
-        if not decoded:
-            raise HTTPException(status_code=400, detail="Ningún glyph pudo ser procesado")
+        if cache_key in _vectorize_cache:
+            vectorized = _vectorize_cache[cache_key]
+        else:
+            # 1. Decodificar y convertir cada glyph base64 → array binario
+            decoded = {}
+            for char, b64_data in request.glyphs.items():
+                try:
+                    decoded[char] = decode_base64_glyph(b64_data)
+                except Exception as e:
+                    print(f"Advertencia: glyph '{char}' no se pudo decodificar: {e}")
+                    continue
 
-        # 2. Vectorizar
-        vectorized = vectorize_glyphs(decoded, smooth=request.smooth)
+            if not decoded:
+                raise HTTPException(status_code=400, detail="Ningún glyph pudo ser procesado")
 
-        # 2.5. Normalizar: alinear baselines y anchos dinámicos
-        vectorized = normalize_glyphs(vectorized)
+            # 2. Vectorizar
+            vectorized = vectorize_glyphs(decoded, smooth=request.smooth)
 
-        # 3. Ensamblar TTF
+            # Cache (LRU simple)
+            if len(_vectorize_cache) >= _cache_max:
+                oldest = next(iter(_vectorize_cache))
+                del _vectorize_cache[oldest]
+            _vectorize_cache[cache_key] = vectorized
+
+        # 3. Normalizar con padding actual
+        final = normalize_glyphs(vectorized, padding_ratio=request.padding_ratio)
+
+        # 4. Ensamblar TTF
         safe_name = "".join(c for c in request.font_name if c.isalnum() or c in "-_ ")[:30]
         ttf_bytes = build_font(
-            vectorized,
+            final,
             font_name=safe_name.replace(" ", ""),
             family_name=safe_name or "MiLetra",
         )

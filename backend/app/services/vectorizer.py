@@ -139,7 +139,7 @@ XHEIGHT = set('aceimnorsuvwxz')
 DESCENDERS = set('gjpqy')
 SPECIALS = set("',\"´¡¿!?")
 EM_SIZE = 1000
-PADDING_RATIO = 0.15
+PADDING_RATIO = 0.25
 MIN_ADVANCE = 100
 
 
@@ -152,13 +152,15 @@ def _contour_bounds(contours: list) -> tuple:
     return (min(xs), max(xs), min(ys), max(ys))
 
 
-def normalize_glyphs(vectorized: Dict[str, Dict]) -> Dict[str, Dict]:
+def normalize_glyphs(vectorized: Dict[str, Dict], padding_ratio: float = None) -> Dict[str, Dict]:
     """
     Post-processes vectorized glyphs to compute dynamic advance widths
     proportional to actual ink width.
     """
     if not vectorized:
         return vectorized
+
+    pr = padding_ratio if padding_ratio is not None else PADDING_RATIO
 
     result = {}
     for char, data in vectorized.items():
@@ -169,7 +171,7 @@ def normalize_glyphs(vectorized: Dict[str, Dict]) -> Dict[str, Dict]:
 
         all_x = [p[0] for c in contours for p in c]
         ink_width = max(all_x) - min(all_x) if all_x else 0
-        advance_width = int(ink_width * (1 + PADDING_RATIO))
+        advance_width = int(ink_width * (1 + pr))
         advance_width = max(advance_width, MIN_ADVANCE)
         advance_width = min(advance_width, EM_SIZE)
 

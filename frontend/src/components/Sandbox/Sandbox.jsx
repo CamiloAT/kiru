@@ -14,15 +14,19 @@ const SAMPLE_TEXTS = {
 };
 
 export default function Sandbox() {
-  const { fontBytes, fontName, setFontName, templateType, setStep, reset } = useAppStore();
+  const { fontBytes, fontName, setFontName, templateType, extractedGlyphs, setFontBytes, setStep, reset } = useAppStore();
   const [text, setText] = useState(SAMPLE_TEXTS.pangram);
   const [fontSize, setFontSize] = useState(32);
+  const [paddingRatio, setPaddingRatio] = useState(25);
   const [fontLoaded, setFontLoaded] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [formatState, setFormatState] = useState({ bold: false, italic: false, underline: false });
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#ffffff');
   const [darkCanvas, setDarkCanvas] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
+  const generationRef = useRef(0);
+  const abortRef = useRef(null);
   const previewRef = useRef(null);
 
   const updateFormatState = useCallback(() => {
@@ -41,8 +45,10 @@ export default function Sandbox() {
         await fontFace.load();
         document.fonts.add(fontFace);
         setFontLoaded(true);
+        setRegenerating(false);
       } catch (err) {
         console.error('Error loading font:', err);
+        setRegenerating(false);
       }
     };
     loadFont();
@@ -52,6 +58,47 @@ export default function Sandbox() {
       });
     };
   }, [fontBytes]);
+
+  // Regenerate font on every padding change (backend caches vectorization)
+  const regenerateFont = useCallback(async (newPadding) => {
+    if (!extractedGlyphs) return;
+    // Cancel previous in-flight request
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+    const gen = ++generationRef.current;
+    setRegenerating(true);
+    try {
+      const res = await fetch('/api/generate-from-glyphs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          glyphs: extractedGlyphs,
+          font_name: fontName || 'MiLetra',
+          template_type: templateType || 'full',
+          smooth: true,
+          padding_ratio: newPadding / 100,
+        }),
+        signal: controller.signal,
+      });
+      if (!res.ok) throw new Error('Error regenerating font');
+      if (gen !== generationRef.current) return; // stale, ignore
+      const buf = await res.arrayBuffer();
+      setFontBytes(buf);
+    } catch (err) {
+      if (err.name === 'AbortError') {
+        if (gen === generationRef.current) setRegenerating(false);
+        return;
+      }
+      console.error('Error regenerating font:', err);
+      setRegenerating(false);
+    }
+  }, [extractedGlyphs, fontName, templateType, setFontBytes]);
+
+  const handlePaddingChange = useCallback((newPadding) => {
+    setPaddingRatio(newPadding);
+    regenerateFont(newPadding);
+  }, [regenerateFont]);
 
   const formatText = (command, value = null) => {
     document.execCommand(command, false, value);
@@ -177,6 +224,19 @@ export default function Sandbox() {
           <Ruler size={14} />
           <span className="sbx-size-val">{fontSize}px</span>
           <input type="range" min="14" max="80" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="sbx-size-slider" />
+          <div className="sbx-toolbar-sep" />
+          <span className="sbx-size-label">Espaciado</span>
+          <button
+            className="sbx-pad-btn"
+            onClick={() => handlePaddingChange(Math.max(0, paddingRatio - 2.5))}
+            disabled={paddingRatio <= 0}
+          >−</button>
+          <span className="sbx-size-val">{paddingRatio}%</span>
+          <button
+            className="sbx-pad-btn"
+            onClick={() => handlePaddingChange(Math.min(80, paddingRatio + 2.5))}
+            disabled={paddingRatio >= 80}
+          >+</button>
         </div>
       </div>
 
