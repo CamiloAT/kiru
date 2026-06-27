@@ -38,7 +38,7 @@ const STEPS = [
 const SHOWCASE = [
   { name: 'Camilo Arias', role: 'Ingeniero en Sistemas', initials: 'CA', preview: 'Kiru, el mejor sitio para hacer fuentes.', chars: '83 caracteres', file: '/fonts/Camilo.ttf', family: 'Camilo', size: '2rem' },
   { name: 'Brenda Aviles', role: 'Psicologa', initials: 'BA', preview: 'Conocerse a uno mismo es el principio de toda sabiduría.', chars: '67 caracteres', file: '/fonts/Brenda.ttf', family: 'Brenda', size: '1.8rem' },
-  { name: 'Andres Tenjo', role: 'Analista', initials: 'AT', preview: 'Querido diario, hoy fue un dia increible.', chars: '72 caracteres', file: '/fonts/Andres.ttf', family: 'Andres', size: '1.8rem' },
+  { name: 'Andres Tenjo', role: 'Analista', initials: 'AT', preview: '"La ciencia de hoy es la tecnología del mañana"', chars: '72 caracteres', file: '/fonts/Andres.ttf', family: 'Andres', size: '1.8rem' },
 ];
 
 const USECASES = [
