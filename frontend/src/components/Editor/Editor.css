@@ -90,9 +90,9 @@
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 16px;
   width: 92%;
-  max-width: 480px;
+  max-width: 540px;
   box-shadow: 0 24px 80px rgba(0, 0, 0, 0.5);
   color: var(--text-primary);
 }
@@ -101,7 +101,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
 }
 
 .modal-title {
@@ -112,7 +112,7 @@
 
 .modal-char-name {
   font-family: var(--font-display);
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 800;
   background: var(--accent-gradient);
   -webkit-background-clip: text;
@@ -125,9 +125,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-subtle);
   color: var(--text-muted);
@@ -143,12 +143,12 @@
 /* ===== TOOL TABS ===== */
 .modal-tool-tabs {
   display: flex;
-  gap: 4px;
-  padding: 4px;
+  gap: 3px;
+  padding: 3px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
-  border-radius: 10px;
-  margin-bottom: 14px;
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .modal-tool-tab {
@@ -156,9 +156,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 10px;
-  border-radius: 7px;
+  gap: 5px;
+  padding: 6px 8px;
+  border-radius: 6px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -184,9 +184,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 34px;
+  width: 28px;
   flex-shrink: 0;
-  border-radius: 7px;
+  border-radius: 6px;
   background: transparent;
   border: none;
   color: var(--text-muted);
@@ -199,22 +199,53 @@
   color: var(--text-primary);
 }
 
+.modal-history-divider {
+  width: 1px;
+  background: var(--border-subtle);
+  margin: 4px 2px;
+  flex-shrink: 0;
+}
+
+.modal-history-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  flex-shrink: 0;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.modal-history-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-primary);
+}
+
+.modal-history-btn:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
 /* ===== TOOL OPTIONS ===== */
 .modal-tool-options {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 .option-group {
   flex: 1;
-  padding: 10px 12px;
+  padding: 7px 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
-  border-radius: 8px;
+  border-radius: 6px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .option-group label {
@@ -229,8 +260,8 @@
 }
 
 .modal-tool-hint {
-  margin-bottom: 12px;
-  padding: 8px 12px;
+  margin-bottom: 8px;
+  padding: 6px 10px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border-subtle);
   border-radius: 8px;
@@ -247,7 +278,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-md);
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   overflow: hidden;
 }
 
@@ -295,16 +326,16 @@
 .modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
+  gap: 8px;
 }
 
 .modal-btn-cancel {
-  padding: 10px 20px;
+  padding: 7px 14px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -318,13 +349,13 @@
 .modal-btn-save {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 22px;
+  gap: 5px;
+  padding: 7px 16px;
   background: var(--accent-gradient);
   border: none;
   border-radius: var(--radius-sm);
   color: #fff;
-  font-size: 0.85rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;

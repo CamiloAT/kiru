@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ArrowLeft, Check, Move, Eraser, Pencil, ZoomIn, RotateCcw, Save, X } from 'lucide-react';
+import { ArrowLeft, Check, Move, Eraser, Pencil, ZoomIn, RotateCcw, Save, X, Undo2, Redo2 } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Editor.css';
@@ -35,8 +35,45 @@ export default function Editor() {
   const dragOffsetRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
   const canvasScaleRef = useRef(1);
+  const moveSnapshotRef = useRef(null);
+  const historyRef = useRef([]);
+  const historyIndexRef = useRef(-1);
 
   const chars = TEMPLATE_CONFIGS[templateType]?.chars || [];
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+
+  const saveToHistory = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const data = ctx.getImageData(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    const idx = historyIndexRef.current;
+    historyRef.current = historyRef.current.slice(0, idx + 1);
+    historyRef.current.push(data);
+    if (historyRef.current.length > 50) historyRef.current.shift();
+    historyIndexRef.current = historyRef.current.length - 1;
+    setCanUndo(historyIndexRef.current > 0);
+    setCanRedo(false);
+  }, []);
+
+  const restoreFromHistory = useCallback((index) => {
+    const canvas = canvasRef.current;
+    if (!canvas || index < 0 || index >= historyRef.current.length) return;
+    const ctx = canvas.getContext('2d');
+    ctx.putImageData(historyRef.current[index], 0, 0);
+    historyIndexRef.current = index;
+    setCanUndo(index > 0);
+    setCanRedo(index < historyRef.current.length - 1);
+  }, []);
+
+  const undo = useCallback(() => {
+    if (historyIndexRef.current > 0) restoreFromHistory(historyIndexRef.current - 1);
+  }, [restoreFromHistory]);
+
+  const redo = useCallback(() => {
+    if (historyIndexRef.current < historyRef.current.length - 1) restoreFromHistory(historyIndexRef.current + 1);
+  }, [restoreFromHistory]);
 
   // Load glyph image when selected char changes
   useEffect(() => {
@@ -52,17 +89,14 @@ export default function Editor() {
       setScale(1);
       scaleRef.current = 1;
       dragOffsetRef.current = { x: 0, y: 0 };
+      moveSnapshotRef.current = null;
       renderCanvas(img, { x: 0, y: 0 }, 1);
+      historyRef.current = [];
+      historyIndexRef.current = -1;
+      saveToHistory();
     };
     img.src = extractedGlyphs[selectedChar];
   }, [selectedChar, extractedGlyphs]);
-
-  // Re-render canvas when switching tools (non-destructive tools)
-  useEffect(() => {
-    if (glyphImageRef.current && (activeTool === 'move' || activeTool === 'scale')) {
-      renderCanvas(glyphImageRef.current, offset, scaleRef.current);
-    }
-  }, [activeTool]);
 
   // Track canvas display size to scale cursor correctly
   useEffect(() => {
@@ -79,6 +113,17 @@ export default function Editor() {
     observer.observe(canvas);
     return () => observer.disconnect();
   }, [selectedChar]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKey = (e) => {
+      if (!selectedChar) return;
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z') { e.preventDefault(); undo(); }
+      if ((e.ctrlKey || e.metaKey) && e.key === 'y') { e.preventDefault(); redo(); }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedChar, undo, redo]);
 
   const renderCanvas = useCallback((img, off, sc) => {
     const canvas = canvasRef.current;
@@ -108,6 +153,12 @@ export default function Editor() {
 
     if (activeTool === 'move') {
       e.preventDefault();
+      const canvas = canvasRef.current;
+      const snap = document.createElement('canvas');
+      snap.width = CANVAS_SIZE;
+      snap.height = CANVAS_SIZE;
+      snap.getContext('2d').drawImage(canvas, 0, 0);
+      moveSnapshotRef.current = snap;
       setIsDragging(true);
       setDragStart({
         x: e.clientX - dragOffsetRef.current.x,
@@ -132,14 +183,17 @@ export default function Editor() {
       setCursorPos({ x: e.clientX, y: e.clientY });
     }
 
-    if (isDragging && activeTool === 'move') {
+    if (isDragging && activeTool === 'move' && moveSnapshotRef.current) {
       const newOff = {
         x: e.clientX - dragStart.x,
         y: e.clientY - dragStart.y,
       };
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.drawImage(moveSnapshotRef.current, newOff.x, newOff.y);
       dragOffsetRef.current = newOff;
       setOffset(newOff);
-      renderCanvas(glyphImageRef.current, newOff, scaleRef.current);
     }
 
     if (isDrawing && (activeTool === 'erase' || activeTool === 'draw')) {
@@ -150,9 +204,13 @@ export default function Editor() {
   }, [isDragging, isDrawing, activeTool, dragStart]);
 
   const handleMouseUp = useCallback(() => {
+    const wasDrawing = isDrawing;
+    const wasDragging = isDragging;
     setIsDragging(false);
     setIsDrawing(false);
-  }, []);
+    moveSnapshotRef.current = null;
+    if (wasDrawing || wasDragging) saveToHistory();
+  }, [isDrawing, isDragging, saveToHistory]);
 
   const paintAt = (x, y) => {
     const canvas = canvasRef.current;
@@ -179,6 +237,7 @@ export default function Editor() {
     scaleRef.current = newScale;
     if (glyphImageRef.current) {
       renderCanvas(glyphImageRef.current, offset, newScale);
+      saveToHistory();
     }
   };
 
@@ -190,6 +249,7 @@ export default function Editor() {
       scaleRef.current = 1;
       dragOffsetRef.current = { x: 0, y: 0 };
       renderCanvas(glyphImageRef.current, { x: 0, y: 0 }, 1);
+      saveToHistory();
     }
   };
 
@@ -302,9 +362,9 @@ export default function Editor() {
           >
             <motion.div
               className="char-modal-content"
-              initial={{ scale: 0.92, y: 16 }}
-              animate={{ scale: 1, y: 0 }}
-              exit={{ scale: 0.92, y: 16 }}
+              initial={{ scale: 0.74, y: 16 }}
+              animate={{ scale: 0.8, y: 0 }}
+              exit={{ scale: 0.74, y: 16 }}
               transition={{ duration: 0.2 }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -330,6 +390,13 @@ export default function Editor() {
                     <span>{label}</span>
                   </button>
                 ))}
+                <div className="modal-history-divider" />
+                <button className="modal-history-btn" onClick={undo} disabled={!canUndo} title="Deshacer (Ctrl+Z)">
+                  <Undo2 size={14} />
+                </button>
+                <button className="modal-history-btn" onClick={redo} disabled={!canRedo} title="Rehacer (Ctrl+Y)">
+                  <Redo2 size={14} />
+                </button>
                 <button className="modal-reset-tab" onClick={resetCanvas} title="Restablecer original">
                   <RotateCcw size={14} />
                 </button>
