@@ -182,66 +182,80 @@ export default function TemplateGenerator() {
         <p className="tpl-subtitle">Seleccioná el tipo, imprímelo y escriba cada letra con marcador oscuro.</p>
       </div>
 
-      {/* Template Type Selector */}
-      <div className="tpl-types">
-        {templateKeys.map((key) => {
-          const c = TEMPLATE_CONFIGS[key];
-          const active = templateType === key;
-          return (
-            <motion.button
-              key={key}
-              className={`tpl-type ${active ? 'tpl-type--active' : ''}`}
-              onClick={() => setTemplateType(key)}
-              whileHover={{ y: -2 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              <div className={`tpl-type-icon ${active ? 'tpl-type-icon--active' : ''}`}>
-                {ICONS[key]}
-              </div>
-              <div className="tpl-type-info">
-                <span className="tpl-type-name">{c.label}</span>
-                <span className="tpl-type-desc">{c.description}</span>
-              </div>
-              <span className={`tpl-type-count ${active ? 'tpl-type-count--active' : ''}`}>
-                {c.chars.length}
-              </span>
-            </motion.button>
-          );
-        })}
-      </div>
-
-      {/* Character Preview */}
-      <div className="tpl-chars">
-        <div className="tpl-chars-header">
-          <span className="tpl-chars-title">Caracteres incluidos</span>
-          <span className="tpl-chars-total">{config.chars.length} en total</span>
+      <div className="tpl-body">
+        {/* Template Type Selector - Left */}
+        <div className="tpl-types">
+          {templateKeys.map((key) => {
+            const c = TEMPLATE_CONFIGS[key];
+            const active = templateType === key;
+            return (
+              <motion.button
+                key={key}
+                className={`tpl-type ${active ? 'tpl-type--active' : ''}`}
+                onClick={() => setTemplateType(key)}
+                whileHover={{ y: -2 }}
+                whileTap={{ scale: 0.97 }}
+              >
+                <div className={`tpl-type-icon ${active ? 'tpl-type-icon--active' : ''}`}>
+                  {ICONS[key]}
+                </div>
+                <div className="tpl-type-info">
+                  <span className="tpl-type-name">{c.label}</span>
+                  <span className="tpl-type-desc">{c.description}</span>
+                </div>
+                <span className={`tpl-type-count ${active ? 'tpl-type-count--active' : ''}`}>
+                  {c.chars.length}
+                </span>
+              </motion.button>
+            );
+          })}
         </div>
-        {charSections.map((section) => (
-          <div key={section.label} className="tpl-chars-section">
-            <span className="tpl-chars-label">{section.label}</span>
-            <div className="tpl-chars-grid">
-              {section.chars.map((c, i) => (
-                <span key={i} className="tpl-char">{c === ' ' ? '·' : c}</span>
-              ))}
-            </div>
+
+        {/* Character Preview - Right */}
+        <div className="tpl-chars">
+          <div className="tpl-chars-header">
+            <span className="tpl-chars-title">Caracteres incluidos</span>
+            <span className="tpl-chars-total">{config.chars.length} en total</span>
           </div>
-        ))}
+          {charSections.map((section) => (
+            <div key={section.label} className="tpl-chars-section">
+              <span className="tpl-chars-label">{section.label}</span>
+              <div className="tpl-chars-grid">
+                {section.chars.map((c, i) => (
+                  <span key={i} className="tpl-char">{c === ' ' ? '·' : c}</span>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Download */}
       <div className="tpl-bottom">
-        <div className="tpl-format">
-          {['pdf', 'png', 'jpg'].map((fmt) => (
-            <button
-              key={fmt}
-              className={`tpl-format-btn ${downloadFormat === fmt ? 'tpl-format-btn--active' : ''}`}
-              onClick={() => setDownloadFormat(fmt)}
-            >
-              {fmt.toUpperCase()}
-            </button>
-          ))}
+        <div className="tpl-format-row">
+          <span className="tpl-format-label">Formato:</span>
+          <div className="tpl-format">
+            {['pdf', 'png', 'jpg'].map((fmt) => (
+              <button
+                key={fmt}
+                className={`tpl-format-btn ${downloadFormat === fmt ? 'tpl-format-btn--active' : ''}`}
+                onClick={() => setDownloadFormat(fmt)}
+              >
+                {fmt.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
+
         <div className="tpl-actions">
+          <motion.button
+            className="btn-secondary"
+            onClick={() => setStep('upload')}
+            whileHover={{ scale: 1.03 }}
+            whileTap={{ scale: 0.97 }}
+          >
+            Ya tengo mi plantilla <ArrowRight size={18} />
+          </motion.button>
           <motion.button
             className="btn-primary"
             onClick={() => {
@@ -257,14 +271,6 @@ export default function TemplateGenerator() {
             ) : (
               <><Download size={18} /> Descargar {downloadFormat.toUpperCase()}</>
             )}
-          </motion.button>
-          <motion.button
-            className="btn-secondary"
-            onClick={() => setStep('upload')}
-            whileHover={{ scale: 1.03 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Ya tengo mi plantilla <ArrowRight size={18} />
           </motion.button>
         </div>
       </div>

@@ -31,15 +31,22 @@
   font-size: 0.95rem;
 }
 
+/* --- Body: side-by-side layout --- */
+.tpl-body {
+  display: flex;
+  gap: 20px;
+  min-height: 0;
+  flex: 1;
+}
+
 /* --- Template Type Selector --- */
 .tpl-types {
   display: flex;
-  gap: 12px;
-  overflow-x: auto;
-  padding: 4px 0 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--accent-primary) var(--bg-card);
-  justify-content: center;
+  flex-direction: column;
+  gap: 6px;
+  width: 280px;
+  min-width: 280px;
+  flex-shrink: 0;
 }
 
 .tpl-types::-webkit-scrollbar {
@@ -59,18 +66,15 @@
 
 .tpl-type {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 16px 14px;
-  min-width: 110px;
-  max-width: 130px;
+  gap: 12px;
+  padding: 14px 14px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  text-align: center;
+  text-align: left;
   color: var(--text-primary);
   flex-shrink: 0;
 }
@@ -116,30 +120,27 @@
   flex-direction: column;
   gap: 2px;
   min-width: 0;
+  flex: 1;
 }
 
 .tpl-type-name {
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.85rem;
   line-height: 1.2;
 }
 
 .tpl-type-desc {
-  font-size: 0.62rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
   line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  text-align: center;
 }
 
 .tpl-type-count {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: var(--text-muted);
   transition: all 0.25s;
+  flex-shrink: 0;
 }
 
 .tpl-type-count--active {
@@ -152,6 +153,23 @@
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
   padding: 20px;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  max-height: 520px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--accent-primary) var(--bg-card);
+}
+
+.tpl-chars::-webkit-scrollbar {
+  width: 6px;
+}
+.tpl-chars::-webkit-scrollbar-track {
+  background: transparent;
+}
+.tpl-chars::-webkit-scrollbar-thumb {
+  background: var(--border-accent);
+  border-radius: 4px;
 }
 
 .tpl-chars-header {
@@ -225,22 +243,33 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  flex-wrap: wrap;
+}
+
+.tpl-format-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.tpl-format-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
 .tpl-format {
   display: flex;
-  gap: 6px;
+  gap: 2px;
   background: var(--bg-secondary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-sm);
-  padding: 4px;
+  padding: 3px;
 }
 
 .tpl-format-btn {
-  padding: 6px 14px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 5px 12px;
+  border-radius: 5px;
+  font-size: 0.75rem;
   font-weight: 600;
   color: var(--text-muted);
   background: transparent;
