@@ -1,94 +1,108 @@
-# Kiru 
+# Kiru
 
-![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
-![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
-![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+[![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=flat&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-009688?style=flat&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-19-20232A?style=flat&logo=react&logoColor=61DAFB)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8-B73BFE?style=flat&logo=vite&logoColor=FFD62E)](https://vite.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat)](LICENSE)
 
-Kiru is a modern web application aimed at image segmentation, vectorization, and building custom typographic fonts. It is built with a robust backend in Python and an interactive, fast, and modern frontend developed with React and Vite.
+Turn your handwriting into a downloadable digital typeface. Kiru processes an image of your writing, segments each character, vectorizes it, and generates a `.ttf` font file ready to use in any application.
 
 ---
 
 ## Main Features
 
-### Backend Processing (Python)
-* **Segmentation (`segmentation.py`):** Specialized algorithms to process and segment input strokes or characters.
-* **Vectorization (`vectorizer.py`):** Precise transformation of rasterized strokes into scalable vector graphics (SVG).
-* **Font Generator (`font_builder.py`):** Final assembly and export of the customized typography.
+- **Image Segmentation:** Automatically detects and extracts each character from a handwritten template using image processing algorithms.
+- **Glyph Editor:** Interactive editor with draw, erase, move, and scale tools to refine each character before generating the font.
+- **Vectorization Engine:** Converts bitmaps into smoothed vector contours ready for professional typography.
+- **Font Builder:** Assembles vectorized glyphs into a valid TrueType (`.ttf`) file with dynamic advance width metrics.
+- **Real-time Sandbox:** Interactive playground to preview the generated font with sample texts, formats, and customizable colors.
+- **Adjustable Padding:** Control character spacing with real-time preview before downloading.
+- **Dark Theme UI:** Modern dark interface with purple/pink gradient accents for a comfortable visual experience.
 
-### Modern Interface (Frontend - React/Vite)
-* **Uploader:** Intuitive interface for quick and user-friendly uploading of images and resources.
-* **Template Generator (TemplateGenerator):** Interactive area for template configuration via `TemplateConfigs.js`.
-* **Interactive Sandbox:** Dynamic playground to visualize results in real-time.
-* **State Management:** Global application state handling using `useAppStore.js`.
+---
+
+## Pages & Views
+
+| View | Description |
+|---|---|
+| **Landing** | Home page with interactive hero, sample font showcase, and step-by-step guide |
+| **Template Generator** | Generates and downloads an empty template with a character grid for writing |
+| **Uploader** | Uploads the completed template image and configures the character set type |
+| **Editor** | Glyph editor with draw/erase/move tools and font generation |
+| **Sandbox** | Font preview with text editor, size and padding controls, installation guide, and download |
 
 ---
 
 ## Execution and Development Guide
 
-Kiru features a decoupled architecture. To run the project locally, you need to start the Backend server and the Frontend development server in two separate terminals.
+Kiru has a decoupled architecture. To run the project locally, you need to start the Backend server and the Frontend development server in separate terminals.
 
-### 1. Backend Setup and Execution
+### 1. Backend Setup
 
-Open a new terminal at the root of the project and follow these steps sequentially:
+1. **Clone the repository:**
+   ```bash
+   git clone https://github.com/CamiloAT/kiru.git
+   cd kiru
+   ```
 
-1. **Navigate to the backend folder:**
+2. **Navigate to the backend folder:**
    ```bash
    cd backend
    ```
 
-2. **Create the virtual environment (`venv`):**
-   *(This step isolates the necessary libraries to avoid conflicts with other Python applications on your system)*
+3. **Create the virtual environment:**
    ```bash
    python -m venv venv
    ```
 
-3. **Activate the virtual environment:**
-   * **On Windows (CMD / PowerShell):**
+4. **Activate the virtual environment:**
+   * **Windows (CMD / PowerShell):**
      ```powershell
      .\venv\Scripts\activate
      ```
-   * **On macOS/Linux:**
+   * **macOS / Linux:**
      ```bash
      source venv/bin/activate
      ```
 
-4. **Install required dependencies:**
-   Make sure the virtual environment is activated (you should see `(venv)` at the beginning of your command line) and run:
+5. **Install dependencies:**
    ```bash
    pip install -r requirements.txt
    ```
 
-5. **Start the Backend server:**
-   Start the API server (assuming it is mounted on FastAPI/Uvicorn).
+6. **Start the server:**
    ```bash
    uvicorn app.main:app --reload
    ```
-   *The server should now be running (usually at `http://localhost:8000` or `http://127.0.0.1:8000`).*
+   > **Note:** The server runs at `http://localhost:8000`.
 
----
+### 2. Frontend Setup
 
-### 2. Frontend Setup and Execution
-
-Open a **completely new terminal window** (so the backend continues running in the background) and do the following:
-
-1. **Navigate to the frontend folder:**
-   From the root of the project, run:
+1. **Open a new terminal** (keep the backend running) and navigate to the frontend:
    ```bash
    cd frontend
    ```
 
-2. **Install Node dependencies:**
-   *(Requires Node.js to be installed on your computer)*
+2. **Install Node.js dependencies:**
    ```bash
    npm install
    ```
 
-3. **Start the Vite development server:**
+3. **Start the development server:**
    ```bash
    npm run dev
    ```
-   *This will start the web application, commonly at `http://localhost:5173`. Open this link directly in your web browser to use **Kiru**.*
+   > **Note:** The app opens at `http://localhost:5173`.
+
+### 3. Usage
+
+1. In **Template Generator**, choose the character set type and download the template.
+2. Write the characters by hand on the printed template.
+3. In **Uploader**, upload a photo of the completed template.
+4. In **Editor**, refine each glyph with the draw/erase/move tools.
+5. Generate the font and download the `.ttf` file from **Sandbox**.
+6. Install the font on your operating system and use it in any application.
 
 ---
 
@@ -97,30 +111,56 @@ Open a **completely new terminal window** (so the backend continues running in t
 ```text
 kiru/
 │
-├── backend/                       ← Python Server (Algorithmic Processing)
-│   ├── requirements.txt           ← List of Python dependencies
+├── backend/                        ← Python server (image processing)
+│   ├── requirements.txt            ← Python dependencies
 │   └── app/
-│       ├── main.py                ← Main API execution file
-│       ├── api/                   ← Controllers and endpoints definition
-│       └── services/              ← Core logic modules
-│           ├── font_builder.py    ← Font creator service
-│           ├── segmentation.py    ← Image segmentation algorithms
-│           └── vectorizer.py      ← Vector conversion (SVGs)
+│       ├── main.py                 ← API endpoints and models
+│       └── services/
+│           ├── segmentation.py     ← Template segmentation and glyph extraction
+│           ├── vectorizer.py       ← Bitmap to contour vectorization
+│           └── font_builder.py     ← TTF file assembly
 │
-└── frontend/                      ← Web UI Application (React + Vite)
-    ├── package.json               ← Node.js dependencies and scripts
-    ├── vite.config.js             ← Vite bundler configuration
-    ├── index.html                 ← Main HTML template
-    ├── public/
-    │   └── kiru-logo.png          ← Generic static assets
+└── frontend/                       ← Web UI (React + Vite)
+    ├── package.json                ← Node.js dependencies
+    ├── vite.config.js              ← Vite configuration
+    ├── index.html                  ← Main HTML template
     └── src/
-        ├── App.jsx / main.jsx     ← Main React entry points
-        ├── components/            ← Visual components organized by context
-        │   ├── Sandbox/           ← Preview component
-        │   ├── TemplateGenerator/ ← Template generator
-        │   └── Uploader/          ← File upload component
-        ├── store/                 ← Global state management (Zustand, etc.)
-        │   └── useAppStore.js
-        └── utils/                 ← Isolated utilities and configurations
-            └── TemplateConfigs.js
+        ├── App.jsx                 ← Routes and navigation
+        ├── App.css                 ← Global shared styles
+        ├── main.css                ← CSS variables and Google Fonts
+        ├── components/
+        │   ├── Landing/            ← Home page
+        │   ├── TemplateGenerator/  ← Template generator
+        │   ├── Uploader/           ← Image upload
+        │   ├── Editor/             ← Glyph editor
+        │   └── Sandbox/            ← Preview and download
+        ├── store/
+        │   └── useAppStore.js      ← Global state (Zustand)
+        └── utils/
+            └── TemplateConfigs.js  ← Character set configs per template
 ```
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **Backend API** | FastAPI 0.115, Uvicorn 0.30, Pydantic 2.13 |
+| **Image Processing** | OpenCV 4.13, NumPy 2.4, Pillow 12.2 |
+| **Font Generation** | fontTools 4.62 (TrueType builder) |
+| **Frontend** | React 19, Vite 8, React Router 7 |
+| **State Management** | Zustand 5 |
+| **Animations** | Framer Motion 12 |
+| **Icons** | Lucide React 1.14 |
+| **Language** | JavaScript (ES Modules) |
+
+---
+
+## Authors
+
+| Name | GitHub |
+|---|---|
+| **Camilo Andres Arias Tenjo** | [@CamiloAT](https://github.com/CamiloAT) |
+
+*Fullstack web application focused on image processing and digital typography.*
