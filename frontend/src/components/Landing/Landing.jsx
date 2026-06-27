@@ -145,13 +145,28 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <h1 className="hero-title">
+          <motion.h1
+            className="hero-title"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+          >
             <span className="hero-title-gradient">Tu letra, tu fuente.</span>
-          </h1>
-          <p className="hero-subtitle">
+          </motion.h1>
+          <motion.p
+            className="hero-subtitle"
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          >
             Convierte tu letra manuscrita en una fuente digital descargable. Un proceso simple en cuatro pasos.
-          </p>
-          <div className="hero-cta">
+          </motion.p>
+          <motion.div
+            className="hero-cta"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, delay: 0.8, ease: [0.16, 1, 0.3, 1] }}
+          >
             <motion.button
               className="btn-primary"
               onClick={goToApp}
@@ -160,7 +175,7 @@ export default function Landing() {
             >
               Crear mi fuente
             </motion.button>
-          </div>
+          </motion.div>
         </motion.div>
 
         <div className="hero-scroll">
