@@ -5,11 +5,121 @@
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow-x: hidden;
+  position: relative;
+}
+
+/* --- Ambient Flares --- */
+.flares {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.flare {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(124, 92, 255, 0.25) 0%, rgba(124, 92, 255, 0.08) 40%, transparent 70%);
+  filter: blur(40px);
+  animation: flareFloat 12s ease-in-out infinite alternate;
+}
+
+.flare--1 {
+  width: 300px;
+  height: 300px;
+  top: 8%;
+  left: 15%;
+  animation-delay: 0s;
+  animation-duration: 14s;
+}
+
+.flare--2 {
+  width: 200px;
+  height: 200px;
+  top: 25%;
+  right: 10%;
+  background: radial-gradient(circle, rgba(255, 107, 181, 0.2) 0%, rgba(255, 107, 181, 0.06) 40%, transparent 70%);
+  animation-delay: -3s;
+  animation-duration: 11s;
+}
+
+.flare--3 {
+  width: 350px;
+  height: 350px;
+  top: 50%;
+  left: 5%;
+  animation-delay: -6s;
+  animation-duration: 16s;
+}
+
+.flare--4 {
+  width: 180px;
+  height: 180px;
+  top: 60%;
+  right: 20%;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.22) 0%, rgba(217, 70, 239, 0.06) 40%, transparent 70%);
+  animation-delay: -2s;
+  animation-duration: 13s;
+}
+
+.flare--5 {
+  width: 280px;
+  height: 280px;
+  bottom: 15%;
+  left: 30%;
+  animation-delay: -8s;
+  animation-duration: 15s;
+}
+
+.flare--6 {
+  width: 160px;
+  height: 160px;
+  top: 35%;
+  left: 50%;
+  background: radial-gradient(circle, rgba(255, 107, 181, 0.18) 0%, rgba(255, 107, 181, 0.05) 40%, transparent 70%);
+  animation-delay: -4s;
+  animation-duration: 12s;
+}
+
+.flare--7 {
+  width: 240px;
+  height: 240px;
+  bottom: 30%;
+  right: 5%;
+  animation-delay: -7s;
+  animation-duration: 14s;
+}
+
+.flare--8 {
+  width: 200px;
+  height: 200px;
+  bottom: 5%;
+  left: 10%;
+  background: radial-gradient(circle, rgba(217, 70, 239, 0.2) 0%, rgba(217, 70, 239, 0.05) 40%, transparent 70%);
+  animation-delay: -1s;
+  animation-duration: 17s;
+}
+
+@keyframes flareFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translate(30px, -20px) scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-20px, 15px) scale(0.9);
+    opacity: 0.7;
+  }
 }
 
 /* --- Hero --- */
 .hero {
   position: relative;
+  z-index: 1;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
@@ -96,100 +206,6 @@
   50% { transform: translateX(-50%) translateY(8px); }
 }
 
-/* Floating elements */
-.hero-float {
-  position: absolute;
-  z-index: 1;
-  opacity: 0.12;
-  pointer-events: none;
-}
-
-.hero-float:not(.hero-float--icon) {
-  font-family: 'Cormorant Garamond', serif;
-  font-style: italic;
-  font-weight: 700;
-  color: var(--accent-primary);
-}
-
-.hero-float--icon {
-  color: var(--accent-secondary);
-}
-
-.hero-float--icon svg {
-  width: inherit;
-  height: inherit;
-}
-
-.hero-float--1 {
-  font-size: 6.5rem;
-  top: 14%;
-  left: 10%;
-  animation: floatA 8s ease-in-out infinite;
-}
-
-.hero-float--2 {
-  font-size: 4.5rem;
-  top: 22%;
-  right: 12%;
-  animation: floatB 10s ease-in-out infinite;
-}
-
-.hero-float--3 {
-  top: 30%;
-  left: 18%;
-  animation: floatC 9s ease-in-out infinite;
-  opacity: 0.08;
-}
-
-.hero-float--4 {
-  font-size: 5rem;
-  bottom: 25%;
-  left: 14%;
-  animation: floatA 11s ease-in-out infinite;
-}
-
-.hero-float--5 {
-  bottom: 32%;
-  right: 16%;
-  animation: floatB 7.5s ease-in-out infinite reverse;
-  opacity: 0.09;
-}
-
-.hero-float--6 {
-  font-size: 3.5rem;
-  bottom: 20%;
-  right: 10%;
-  animation: floatC 8.5s ease-in-out infinite;
-}
-
-.hero-float--7 {
-  top: 44%;
-  left: 8%;
-  animation: floatA 10s ease-in-out infinite;
-  opacity: 0.07;
-}
-
-.hero-float--8 {
-  font-size: 2.8rem;
-  top: 38%;
-  right: 10%;
-  animation: floatB 9.5s ease-in-out infinite;
-}
-
-.hero-float--9 {
-  top: 18%;
-  right: 24%;
-  animation: floatC 8s ease-in-out infinite reverse;
-  opacity: 0.1;
-}
-
-.hero-float--10 {
-  font-size: 3rem;
-  bottom: 38%;
-  left: 8%;
-  animation: floatA 9s ease-in-out infinite;
-}
-
 @keyframes floatA {
   0%, 100% { transform: translate(0, 0) rotate(0deg); }
   33% { transform: translate(15px, -20px) rotate(5deg); }
@@ -208,13 +224,119 @@
 }
 
 /* --- How it Works --- */
+.how-wrapper {
+  background: var(--bg-secondary);
+}
+
 .how {
+  position: relative;
   padding: 100px 24px;
   max-width: 1100px;
   margin: 0 auto;
 }
 
+.how > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Floating letters/icons in How section */
+.how-floats {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.how-flt {
+  position: absolute;
+  opacity: 0.1;
+}
+
+.how-flt:not(.how-flt--icon) {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.how-flt--icon {
+  color: var(--accent-secondary);
+}
+
+.how-flt--1 {
+  font-size: 5.5rem;
+  top: -5%;
+  left: -6%;
+  animation: floatA 9s ease-in-out infinite;
+}
+
+.how-flt--2 {
+  font-size: 3.5rem;
+  top: -3%;
+  right: -6%;
+  animation: floatB 11s ease-in-out infinite;
+}
+
+.how-flt--3 {
+  top: 18%;
+  left: -5%;
+  animation: floatC 10s ease-in-out infinite;
+  opacity: 0.08;
+}
+
+.how-flt--4 {
+  font-size: 4rem;
+  bottom: 10%;
+  left: -7%;
+  animation: floatA 12s ease-in-out infinite;
+}
+
+.how-flt--5 {
+  bottom: 22%;
+  right: -5%;
+  animation: floatB 8s ease-in-out infinite reverse;
+  opacity: 0.07;
+}
+
+.how-flt--6 {
+  font-size: 3rem;
+  bottom: -3%;
+  right: -6%;
+  animation: floatC 9.5s ease-in-out infinite;
+}
+
+.how-flt--7 {
+  top: 48%;
+  left: -8%;
+  animation: floatA 10.5s ease-in-out infinite;
+  opacity: 0.06;
+}
+
+.how-flt--8 {
+  font-size: 2.5rem;
+  top: 38%;
+  right: -7%;
+  animation: floatB 10s ease-in-out infinite;
+}
+
+.how-flt--9 {
+  top: -2%;
+  right: 8%;
+  animation: floatC 8.5s ease-in-out infinite reverse;
+  opacity: 0.09;
+}
+
+.how-flt--10 {
+  font-size: 2.8rem;
+  bottom: 30%;
+  left: -8%;
+  animation: floatA 11s ease-in-out infinite;
+}
+
 .section-header {
+  position: relative;
+  z-index: 1;
   text-align: center;
   margin-bottom: 64px;
 }
@@ -249,6 +371,8 @@
 }
 
 .how-steps {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 80px;
@@ -307,25 +431,24 @@
 
 .how-step-visual {
   flex: 1;
-  background: var(--bg-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  padding: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 240px;
 }
 
-.how-step-icon {
-  font-size: 4rem;
-  opacity: 0.6;
+.how-step:nth-child(even) .how-step-img {
+  transform: translateX(-40px);
+}
+
+.how-step-img {
+  width: 130%;
+  max-width: none;
+  object-fit: contain;
 }
 
 /* --- Showcase --- */
 .showcase {
   padding: 100px 24px;
-  background: var(--bg-secondary);
 }
 
 .showcase-inner {

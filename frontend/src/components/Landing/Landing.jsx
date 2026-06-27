@@ -10,21 +10,28 @@ const STEPS = [
     label: 'Paso 1',
     title: 'Escribe cada letra',
     desc: 'Descarga la plantilla, imprimila y escribe cada caracter con un marcador oscuro dentro de las celdas.',
-    icon: <PenTool size={48} />,
+    img: '/step-1.png',
   },
   {
     num: '02',
     label: 'Paso 2',
     title: 'Escanea y sube',
     desc: 'Toma una foto o escanea la plantilla. Subila a la plataforma y ajusta brillo, contraste y rotacion.',
-    icon: <Scan size={48} />,
+    img: '/step-2.png',
   },
   {
     num: '03',
     label: 'Paso 3',
+    title: 'Afinar tus letras',
+    desc: 'Revisa los caracteres extraidos, mueve, borra o dibuja para que cada glyph quede perfecto.',
+    img: '/step-3.png',
+  },
+  {
+    num: '04',
+    label: 'Paso 4',
     title: 'Descarga tu fuente',
-    desc: 'Revisa los caracteres extraidos, afinarlos si hace falta, y descarga tu archivo .TTF listo para usar.',
-    icon: <Download size={48} />,
+    desc: 'Previsualiza tu fuente en la sandbox y descarga el archivo .TTF listo para usar.',
+    img: '/step-4.png',
   },
 ];
 
@@ -116,20 +123,21 @@ export default function Landing() {
 
   return (
     <div className="landing" ref={containerRef}>
+      {/* Ambient flares */}
+      <div className="flares">
+        <div className="flare flare--1" />
+        <div className="flare flare--2" />
+        <div className="flare flare--3" />
+        <div className="flare flare--4" />
+        <div className="flare flare--5" />
+        <div className="flare flare--6" />
+        <div className="flare flare--7" />
+        <div className="flare flare--8" />
+      </div>
+
       {/* Hero */}
       <section className="hero">
         <div className="hero-bg" />
-
-        <span className="hero-float hero-float--1">Aa</span>
-        <span className="hero-float hero-float--2">Bb</span>
-        <span className="hero-float hero-float--icon hero-float--3"><Pen size={42} strokeWidth={1.5} /></span>
-        <span className="hero-float hero-float--4">Gg</span>
-        <span className="hero-float hero-float--icon hero-float--5"><Feather size={36} strokeWidth={1.5} /></span>
-        <span className="hero-float hero-float--6">Kk</span>
-        <span className="hero-float hero-float--icon hero-float--7"><Pencil size={38} strokeWidth={1.5} /></span>
-        <span className="hero-float hero-float--8">Qq</span>
-        <span className="hero-float hero-float--icon hero-float--9"><PenTool size={34} strokeWidth={1.5} /></span>
-        <span className="hero-float hero-float--10">Zz</span>
 
         <motion.div
           className="hero-content"
@@ -162,10 +170,24 @@ export default function Landing() {
       </section>
 
       {/* How it Works */}
+      <div className="how-wrapper">
       <section className="how">
+        <div className="how-floats">
+          <span className="how-flt how-flt--1">Aa</span>
+          <span className="how-flt how-flt--2">Bb</span>
+          <span className="how-flt how-flt--icon how-flt--3"><Pen size={40} strokeWidth={1.5} /></span>
+          <span className="how-flt how-flt--4">Gg</span>
+          <span className="how-flt how-flt--icon how-flt--5"><Feather size={34} strokeWidth={1.5} /></span>
+          <span className="how-flt how-flt--6">Kk</span>
+          <span className="how-flt how-flt--icon how-flt--7"><Pencil size={36} strokeWidth={1.5} /></span>
+          <span className="how-flt how-flt--8">Qq</span>
+          <span className="how-flt how-flt--icon how-flt--9"><PenTool size={32} strokeWidth={1.5} /></span>
+          <span className="how-flt how-flt--10">Zz</span>
+        </div>
+
         <div className="section-header reveal">
           <span className="section-badge">Como funciona</span>
-          <h2 className="section-title">Tres pasos simples</h2>
+          <h2 className="section-title">Cuatro pasos simples</h2>
           <p className="section-subtitle">Desde tu letra manuscrita hasta una fuente digital en minutos.</p>
         </div>
 
@@ -179,12 +201,13 @@ export default function Landing() {
                 <p className="how-step-desc">{step.desc}</p>
               </div>
               <div className="how-step-visual reveal-right">
-                <div className="how-step-icon">{step.icon}</div>
+                <img src={step.img} alt={step.title} className="how-step-img" />
               </div>
             </div>
           ))}
         </div>
       </section>
+      </div>
 
       {/* Showcase */}
       <section className="showcase">
