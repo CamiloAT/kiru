@@ -85,12 +85,13 @@ export default function Editor() {
     const img = new Image();
     img.onload = () => {
       glyphImageRef.current = img;
+      const fitScale = Math.min(CANVAS_SIZE / img.width, CANVAS_SIZE / img.height) * 0.85;
       setOffset({ x: 0, y: 0 });
-      setScale(1);
-      scaleRef.current = 1;
+      setScale(fitScale);
+      scaleRef.current = fitScale;
       dragOffsetRef.current = { x: 0, y: 0 };
       moveSnapshotRef.current = null;
-      renderCanvas(img, { x: 0, y: 0 }, 1);
+      renderCanvas(img, { x: 0, y: 0 }, fitScale);
       historyRef.current = [];
       historyIndexRef.current = -1;
       saveToHistory();
@@ -244,11 +245,12 @@ export default function Editor() {
   // ===== RESET =====
   const resetCanvas = () => {
     if (glyphImageRef.current) {
+      const fitScale = Math.min(CANVAS_SIZE / glyphImageRef.current.width, CANVAS_SIZE / glyphImageRef.current.height) * 0.85;
       setOffset({ x: 0, y: 0 });
-      setScale(1);
-      scaleRef.current = 1;
+      setScale(fitScale);
+      scaleRef.current = fitScale;
       dragOffsetRef.current = { x: 0, y: 0 };
-      renderCanvas(glyphImageRef.current, { x: 0, y: 0 }, 1);
+      renderCanvas(glyphImageRef.current, { x: 0, y: 0 }, fitScale);
       saveToHistory();
     }
   };
