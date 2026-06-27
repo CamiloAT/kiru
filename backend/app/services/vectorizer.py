@@ -83,11 +83,10 @@ def contours_to_glyph_data(
     - Las letras suben hasta ascender (~800 en 1000 EM)
     - Las letras bajan hasta descender (~-200 en 1000 EM)
     """
-    scale = em_size / canvas_size
-    baseline_y = int(canvas_size * baseline_ratio)
-
-    # Shift descenders down by 15% of the cell height
-    y_shift = int(canvas_size * 0.15) if is_descender else 0
+    border = 10
+    content_h = canvas_size - 2 * border
+    scale = em_size / content_h
+    baseline_y = border + content_h * baseline_ratio
 
     converted_contours = []
     for contour in contours:
@@ -96,16 +95,13 @@ def contours_to_glyph_data(
 
         font_points = []
         for px, py in contour:
-            py += y_shift
-            # Escalar a unidades EM e invertir Y
             fx = px * scale
-            fy = (baseline_y - py) * scale  # Invertir Y y ajustar baseline
+            fy = (baseline_y - py) * scale
             font_points.append((round(fx, 1), round(fy, 1)))
 
         if len(font_points) >= 3:
             converted_contours.append(font_points)
 
-    # Calcular el ancho del glifo (advance width)
     all_x = [p[0] for contour in converted_contours for p in contour]
     if all_x:
         advance_width = int(max(all_x) + 50 * scale)
@@ -126,12 +122,60 @@ def vectorize_glyphs(
     Pipeline completo: recibe dict de {char: imagen} y retorna {char: glyph_data}.
     """
     vectorized = {}
-    descenders = {'g', 'j', 'p', 'q', 'y'}
 
     for char, glyph_img in glyphs.items():
         contours = bitmap_to_contours(glyph_img)
-        is_descender = char in descenders
-        glyph_data = contours_to_glyph_data(contours, smooth=smooth, is_descender=is_descender)
+        actual_height = glyph_img.shape[0]
+        glyph_data = contours_to_glyph_data(contours, canvas_size=actual_height, smooth=smooth)
         vectorized[char] = glyph_data
 
     return vectorized
+
+
+# --- Character classification for baseline alignment ---
+
+ASCENDERS = set('bdfhkl')
+XHEIGHT = set('aceimnorsuvwxz')
+DESCENDERS = set('gjpqy')
+SPECIALS = set("',\"´¡¿!?")
+EM_SIZE = 1000
+PADDING_RATIO = 0.15
+MIN_ADVANCE = 100
+
+
+def _contour_bounds(contours: list) -> tuple:
+    """Returns (min_x, max_x, min_y, max_y) across all contour points."""
+    xs = [p[0] for c in contours for p in c]
+    ys = [p[1] for c in contours for p in c]
+    if not xs:
+        return (0, 0, 0, 0)
+    return (min(xs), max(xs), min(ys), max(ys))
+
+
+def normalize_glyphs(vectorized: Dict[str, Dict]) -> Dict[str, Dict]:
+    """
+    Post-processes vectorized glyphs to compute dynamic advance widths
+    proportional to actual ink width.
+    """
+    if not vectorized:
+        return vectorized
+
+    result = {}
+    for char, data in vectorized.items():
+        contours = data.get("contours", [])
+        if not contours:
+            result[char] = data
+            continue
+
+        all_x = [p[0] for c in contours for p in c]
+        ink_width = max(all_x) - min(all_x) if all_x else 0
+        advance_width = int(ink_width * (1 + PADDING_RATIO))
+        advance_width = max(advance_width, MIN_ADVANCE)
+        advance_width = min(advance_width, EM_SIZE)
+
+        result[char] = {
+            "contours": contours,
+            "advance_width": advance_width,
+        }
+
+    return result

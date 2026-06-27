@@ -19,7 +19,7 @@ import numpy as np
 import base64
 
 from app.services.segmentation import segment_template
-from app.services.vectorizer import vectorize_glyphs
+from app.services.vectorizer import vectorize_glyphs, normalize_glyphs
 from app.services.font_builder import build_font
 
 app = FastAPI(
@@ -108,6 +108,9 @@ async def generate_font(
 
         # 2. Vectorizar: convertir bitmaps a contornos vectoriales
         vectorized = vectorize_glyphs(glyphs, smooth=smooth)
+
+        # 2.5. Normalizar: alinear baselines y anchos dinámicos
+        vectorized = normalize_glyphs(vectorized)
 
         # 3. Ensamblar: crear el archivo TTF
         safe_name = "".join(c for c in font_name if c.isalnum() or c in "-_ ")[:30]
@@ -205,6 +208,9 @@ async def generate_from_glyphs(request: GenerateFromGlyphsRequest):
 
         # 2. Vectorizar
         vectorized = vectorize_glyphs(decoded, smooth=request.smooth)
+
+        # 2.5. Normalizar: alinear baselines y anchos dinámicos
+        vectorized = normalize_glyphs(vectorized)
 
         # 3. Ensamblar TTF
         safe_name = "".join(c for c in request.font_name if c.isalnum() or c in "-_ ")[:30]

@@ -289,6 +289,31 @@ def extract_glyph_from_cell(binary: np.ndarray, cell: Tuple[int, int, int, int],
 
     glyph_resized = cv2.resize(glyph_col, (target_w, target_h), interpolation=cv2.INTER_AREA)
 
+    # --- Alineación de baseline ---
+    ink_coords = cv2.findNonZero(glyph_resized)
+    if ink_coords is not None:
+        ix, iy, iw, ih = cv2.boundingRect(ink_coords)
+        target_y = int(target_h * 0.80)
+
+        if char in ("'", '"', '\u00b4', '`'):
+            center_y = iy + ih // 2
+            shift = int(target_h * 0.10) - center_y
+        elif char in ('+', '-', '*', '='):
+            center_y = iy + ih // 2
+            shift = int(target_h * 0.45) - center_y
+        elif char in ('g', 'j', 'p', 'q', 'y'):
+            floor_y = iy + int(ih * 0.75)
+            shift = target_y - floor_y
+        else:
+            shift = target_y - (iy + ih)
+
+        if abs(shift) > 1:
+            M = np.float32([[1, 0, 0], [0, 1, shift]])
+            glyph_resized = cv2.warpAffine(
+                glyph_resized, M, (glyph_resized.shape[1], target_h),
+                borderValue=0
+            )
+
     return glyph_resized
 
 

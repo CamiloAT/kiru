@@ -88,7 +88,9 @@ export default function Editor() {
     const drawW = img.width * sc;
     const drawH = img.height * sc;
     const x = (CANVAS_SIZE - drawW) / 2 + off.x;
-    const y = (CANVAS_SIZE - drawH) / 2 + off.y;
+    const baselineTarget = CANVAS_SIZE * 0.75;
+    const baselineInImage = img.height * 0.775;
+    const y = baselineTarget - baselineInImage * sc + off.y;
     ctx.drawImage(img, x, y, drawW, drawH);
   }, []);
 
