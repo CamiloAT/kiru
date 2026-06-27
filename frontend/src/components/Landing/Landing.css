@@ -41,20 +41,15 @@
   flex-direction: column;
   align-items: center;
   gap: 24px;
-}
-
-.hero-logo {
-  height: 72px;
-  width: auto;
-  filter: drop-shadow(0 0 30px rgba(155, 89, 240, 0.4));
+  margin-top: 40px;
 }
 
 .hero-title {
-  font-family: var(--font-display);
+  font-family: 'Cormorant Garamond', serif;
   font-size: clamp(2.5rem, 6vw, 4.5rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -2px;
+  letter-spacing: -1px;
 }
 
 .hero-title-gradient {
@@ -105,53 +100,94 @@
 .hero-float {
   position: absolute;
   z-index: 1;
-  opacity: 0.15;
-  font-family: var(--font-display);
-  font-weight: 700;
-  color: var(--accent-primary);
+  opacity: 0.12;
   pointer-events: none;
 }
 
+.hero-float:not(.hero-float--icon) {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+.hero-float--icon {
+  color: var(--accent-secondary);
+}
+
+.hero-float--icon svg {
+  width: inherit;
+  height: inherit;
+}
+
 .hero-float--1 {
-  font-size: 6rem;
-  top: 12%;
-  left: 8%;
+  font-size: 6.5rem;
+  top: 14%;
+  left: 10%;
   animation: floatA 8s ease-in-out infinite;
 }
 
 .hero-float--2 {
-  font-size: 4rem;
-  top: 20%;
-  right: 10%;
+  font-size: 4.5rem;
+  top: 22%;
+  right: 12%;
   animation: floatB 10s ease-in-out infinite;
 }
 
 .hero-float--3 {
-  font-size: 5rem;
-  bottom: 18%;
-  left: 12%;
+  top: 30%;
+  left: 18%;
   animation: floatC 9s ease-in-out infinite;
+  opacity: 0.08;
 }
 
 .hero-float--4 {
-  font-size: 3.5rem;
+  font-size: 5rem;
   bottom: 25%;
-  right: 8%;
-  animation: floatA 7s ease-in-out infinite reverse;
+  left: 14%;
+  animation: floatA 11s ease-in-out infinite;
 }
 
 .hero-float--5 {
-  font-size: 2.5rem;
-  top: 40%;
-  left: 3%;
-  animation: floatB 11s ease-in-out infinite;
+  bottom: 32%;
+  right: 16%;
+  animation: floatB 7.5s ease-in-out infinite reverse;
+  opacity: 0.09;
 }
 
 .hero-float--6 {
-  font-size: 3rem;
-  top: 35%;
-  right: 3%;
+  font-size: 3.5rem;
+  bottom: 20%;
+  right: 10%;
   animation: floatC 8.5s ease-in-out infinite;
+}
+
+.hero-float--7 {
+  top: 44%;
+  left: 8%;
+  animation: floatA 10s ease-in-out infinite;
+  opacity: 0.07;
+}
+
+.hero-float--8 {
+  font-size: 2.8rem;
+  top: 38%;
+  right: 10%;
+  animation: floatB 9.5s ease-in-out infinite;
+}
+
+.hero-float--9 {
+  top: 18%;
+  right: 24%;
+  animation: floatC 8s ease-in-out infinite reverse;
+  opacity: 0.1;
+}
+
+.hero-float--10 {
+  font-size: 3rem;
+  bottom: 38%;
+  left: 8%;
+  animation: floatA 9s ease-in-out infinite;
 }
 
 @keyframes floatA {
@@ -524,7 +560,8 @@
 
 .cta-float {
   position: absolute;
-  font-family: var(--font-display);
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
   font-weight: 700;
   opacity: 0.06;
   pointer-events: none;

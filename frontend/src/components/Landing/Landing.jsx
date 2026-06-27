@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles, PenTool, Scan, Download, Globe, AtSign, Mail } from 'lucide-react';
+import { ArrowDown, Sparkles, PenTool, Pen, Pencil, Feather, Scan, Download, Globe, AtSign, Mail } from 'lucide-react';
 import './Landing.css';
 
 const STEPS = [
@@ -122,10 +122,14 @@ export default function Landing() {
 
         <span className="hero-float hero-float--1">Aa</span>
         <span className="hero-float hero-float--2">Bb</span>
-        <span className="hero-float hero-float--3">Gg</span>
-        <span className="hero-float hero-float--4">Kk</span>
-        <span className="hero-float hero-float--5">Qq</span>
-        <span className="hero-float hero-float--6">Zz</span>
+        <span className="hero-float hero-float--icon hero-float--3"><Pen size={42} strokeWidth={1.5} /></span>
+        <span className="hero-float hero-float--4">Gg</span>
+        <span className="hero-float hero-float--icon hero-float--5"><Feather size={36} strokeWidth={1.5} /></span>
+        <span className="hero-float hero-float--6">Kk</span>
+        <span className="hero-float hero-float--icon hero-float--7"><Pencil size={38} strokeWidth={1.5} /></span>
+        <span className="hero-float hero-float--8">Qq</span>
+        <span className="hero-float hero-float--icon hero-float--9"><PenTool size={34} strokeWidth={1.5} /></span>
+        <span className="hero-float hero-float--10">Zz</span>
 
         <motion.div
           className="hero-content"
@@ -133,7 +137,6 @@ export default function Landing() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
         >
-          <img src="/kiru-logo.png" alt="Kiru" className="hero-logo" />
           <h1 className="hero-title">
             <span className="hero-title-gradient">Tu letra, tu fuente.</span>
           </h1>
