@@ -1,8 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { PenTool, Heart } from 'lucide-react';
 import useAppStore from './store/useAppStore';
+import Landing from './components/Landing/Landing';
 import TemplateGenerator from './components/TemplateGenerator/TemplateGenerator';
 import Uploader from './components/Uploader/Uploader';
 import Editor from './components/Editor/Editor';
@@ -17,7 +18,7 @@ const STEP_LABELS = {
   sandbox: 'Tu Fuente',
 };
 
-function App() {
+function AppWizard() {
   const { step, setStep } = useAppStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -123,6 +124,19 @@ function App() {
         </footer>
       </div>
     </>
+  );
+}
+
+function App() {
+  return (
+    <Routes>
+      <Route path="/" element={<Landing />} />
+      <Route path="/template" element={<AppWizard />} />
+      <Route path="/upload" element={<AppWizard />} />
+      <Route path="/editor" element={<AppWizard />} />
+      <Route path="/sandbox" element={<AppWizard />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 }
 
