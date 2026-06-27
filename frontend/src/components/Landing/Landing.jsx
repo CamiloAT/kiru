@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowDown, Sparkles, PenTool, Pen, Pencil, Feather, Scan, Download, Globe, AtSign, Mail } from 'lucide-react';
+import { ArrowDown, Sparkles, PenTool, Pen, Pencil, Feather, Scan, Download, Mail } from 'lucide-react';
 import './Landing.css';
 
 const STEPS = [
@@ -61,27 +61,6 @@ const USECASES = [
     icon: <Sparkles size={22} />,
     title: 'Notas creativas',
     desc: 'Cuadernos de bullet journal, stickers, scrapbooking y proyectos artesanales.',
-  },
-];
-
-const TESTIMONIALS = [
-  {
-    text: 'Use mi letra para crear la fuente de mi marca de reposteria. Mis clientes no pueden creer que sea escrita a mano.',
-    name: 'Camila Rodriguez',
-    role: 'Diseñadora grafica',
-    initials: 'CR',
-  },
-  {
-    text: 'Increible como mis notas de clase se ven ahora con mi propia fuente. Es como tener un estilo propio digital.',
-    name: 'Lucas Fernandez',
-    role: 'Estudiante de diseño',
-    initials: 'LF',
-  },
-  {
-    text: 'Hice las invitaciones de casamiento con la fuente de mi novia. Fue un detalle unico y muy emotivo.',
-    name: 'Sofia Martinez',
-    role: 'Organizadora de eventos',
-    initials: 'SM',
   },
 ];
 
@@ -265,6 +244,7 @@ export default function Landing() {
       </section>
 
       {/* Use Cases */}
+      <div className="usecases-wrapper">
       <section className="usecases">
         <div className="section-header reveal">
           <span className="section-badge">Usos</span>
@@ -282,69 +262,11 @@ export default function Landing() {
           ))}
         </div>
       </section>
-
-      {/* Testimonials */}
-      <section className="testimonials">
-        <div className="testimonials-inner">
-          <div className="section-header reveal">
-            <span className="section-badge">Testimonios</span>
-            <h2 className="section-title">Lo que dicen nuestros usuarios</h2>
-          </div>
-
-          <div className="testimonials-grid">
-            {TESTIMONIALS.map((t, i) => (
-              <div className="testimonial-card reveal" key={i}>
-                <p className="testimonial-text">"{t.text}"</p>
-                <div className="testimonial-author">
-                  <div className="testimonial-avatar">{t.initials}</div>
-                  <div>
-                    <div className="testimonial-name">{t.name}</div>
-                    <div className="testimonial-role">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Final */}
-      <section className="cta-final">
-        <div className="cta-final-bg" />
-        <span className="cta-float cta-float--1">Aa</span>
-        <span className="cta-float cta-float--2">Kk</span>
-
-        <div className="cta-final-content reveal">
-          <h2 className="cta-final-title">
-            <span className="hero-title-gradient">Crea tu fuente ahora</span>
-          </h2>
-          <p className="cta-final-subtitle">Tu letra merece convertirse en una fuente. Empeza hoy.</p>
-          <motion.button
-            className="btn-primary"
-            onClick={goToApp}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Empezar
-          </motion.button>
-        </div>
-      </section>
+      </div>
 
       {/* Footer */}
       <footer className="landing-footer">
-        <img src="/kiru-logo.png" alt="Kiru" className="footer-logo" />
-        <div className="footer-links">
-          <a href="https://github.com" target="_blank" rel="noreferrer" className="footer-link">
-            <Globe size={16} /> GitHub
-          </a>
-          <a href="https://instagram.com" target="_blank" rel="noreferrer" className="footer-link">
-            <AtSign size={16} /> Instagram
-          </a>
-          <a href="mailto:hola@kiru.app" className="footer-link">
-            <Mail size={16} /> Contacto
-          </a>
-        </div>
-        <span className="footer-copy">&copy; 2025 Kiru</span>
+        <span className="footer-copy">&copy; 2026 Kiru. Todos los derechos reservados.</span>
       </footer>
     </div>
   );

@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useLocation, useNavigate, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
-import { PenTool, Heart } from 'lucide-react';
+import { PenTool, Heart, ArrowLeft } from 'lucide-react';
 import useAppStore from './store/useAppStore';
 import Landing from './components/Landing/Landing';
 import TemplateGenerator from './components/TemplateGenerator/TemplateGenerator';
@@ -57,10 +57,26 @@ function AppWizard() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            style={{ cursor: 'pointer' }}
+            onClick={() => navigate('/')}
           >
             <img src="/kiru-logo.png" alt="K" className="logo-icon" />
             <h1 className="logo-text">iru</h1>
           </motion.div>
+
+          {step === 'template' && (
+            <motion.button
+              className="back-btn"
+              onClick={() => navigate('/')}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.4, delay: 0.3 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <ArrowLeft size={18} />
+            </motion.button>
+          )}
 
           <motion.nav
             className="step-indicator"
@@ -118,9 +134,7 @@ function AppWizard() {
 
         {/* Footer */}
         <footer className="app-footer">
-          <p style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-            Hecho con <Heart size={14} className="text-accent" /> — Kiru v1.0
-          </p>
+          <p>&copy; 2026 Kiru. Todos los derechos reservados.</p>
         </footer>
       </div>
     </>
