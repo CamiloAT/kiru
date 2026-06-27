@@ -7,9 +7,9 @@
 }
 
 .back-btn {
-  position: absolute;
-  left: 0;
-  top: 32px;
+  position: fixed;
+  left: 16px;
+  top: 16px;
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -18,6 +18,7 @@
   align-items: center;
   justify-content: center;
   transition: color 0.2s;
+  z-index: 100;
 }
 
 .back-btn:hover {

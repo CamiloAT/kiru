@@ -102,7 +102,7 @@ export default function Uploader() {
             <input {...getInputProps()} />
             <Camera size={40} className="upl-drop-icon" />
             <p className="upl-drop-text">
-              {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastrá tu imagen o hacé clic para seleccionar'}
+              {isDragActive ? 'Suelta la imagen aquí...' : 'Arrastrá tu imagen o haz clic para seleccionar'}
             </p>
             <span className="upl-drop-hint">JPG, PNG o WebP — Máx. 20MB</span>
           </div>
