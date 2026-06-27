@@ -138,10 +138,10 @@ export default function Landing() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.9, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
           >
-            <span className="hero-title-gradient">Tu letra, tu fuente.</span>
+            <span className="hero-title-gradient">Kiru</span>
           </motion.h1>
           <motion.p
-            className="hero-subtitle"
+            className="hero-description"
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}

@@ -162,10 +162,11 @@
 
 .hero-title {
   font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(2.5rem, 6vw, 4.5rem);
+  font-size: clamp(3rem, 7vw, 5.5rem);
   font-weight: 700;
   line-height: 1.1;
   letter-spacing: -1px;
+  margin-bottom: -6px;
 }
 
 .hero-title-gradient {
@@ -183,11 +184,21 @@
 }
 
 .hero-subtitle {
-  font-size: 1.15rem;
+  font-size: 1.25rem;
+  font-weight: 500;
   color: var(--text-secondary);
   max-width: 480px;
   line-height: 1.6;
+  margin: 0;
   animation: subtlePulse 4s ease-in-out infinite;
+}
+
+.hero-description {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  max-width: 480px;
+  line-height: 1.6;
+  margin-top: 4px;
 }
 
 @keyframes subtlePulse {
