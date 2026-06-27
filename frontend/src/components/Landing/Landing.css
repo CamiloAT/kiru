@@ -497,44 +497,75 @@
 }
 
 .showcase-card {
-  min-width: 280px;
-  max-width: 320px;
+  min-width: 300px;
+  max-width: 340px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 28px;
+  border-radius: var(--radius-lg);
+  padding: 0;
   flex-shrink: 0;
   scroll-snap-align: start;
-  transition: all 0.3s;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden;
 }
 
 .showcase-card:hover {
   border-color: var(--accent-primary);
-  box-shadow: 0 0 30px var(--accent-primary-glow);
-  transform: translateY(-4px);
+  box-shadow: 0 8px 40px rgba(124, 92, 255, 0.15);
+  transform: translateY(-6px);
+}
+
+.showcase-card-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 20px 24px 16px;
+}
+
+.showcase-card-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: var(--accent-gradient);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.showcase-card-author {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .showcase-card-name {
   font-family: var(--font-display);
-  font-size: 0.85rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: var(--accent-primary);
-  margin-bottom: 16px;
+  color: var(--text-primary);
+}
+
+.showcase-card-role {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.showcase-card-divider {
+  height: 1px;
+  margin: 0 24px;
+  background: linear-gradient(to right, transparent, var(--border-accent), transparent);
 }
 
 .showcase-card-preview {
-  font-family: 'KiruUserFont', serif;
   font-size: 1.8rem;
-  line-height: 1.4;
+  line-height: 1.5;
   color: var(--text-primary);
-  min-height: 100px;
+  padding: 20px 24px 28px;
   word-break: break-word;
-}
-
-.showcase-card-meta {
-  margin-top: 16px;
-  font-size: 0.75rem;
-  color: var(--text-muted);
 }
 
 /* --- Use Cases --- */

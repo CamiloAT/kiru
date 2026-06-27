@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { ArrowDown, Sparkles, PenTool, Pen, Pencil, Feather, Scan, Download, Globe, AtSign, Mail } from 'lucide-react';
@@ -36,12 +36,9 @@ const STEPS = [
 ];
 
 const SHOWCASE = [
-  { name: 'Maria手写', preview: 'Hola, como estas? Todo bien por aca.', chars: '83 caracteres' },
-  { name: 'Luca Script', preview: 'The quick brown fox jumps over the lazy dog.', chars: '67 caracteres' },
-  { name: ' notas de ana', preview: 'Querido diario, hoy fue un dia increible.', chars: '72 caracteres' },
-  { name: 'Brush stroke', preview: 'Creatividad sin limites es lo que nos define.', chars: '91 caracteres' },
-  { name: 'Cursive Flow', preview: 'Amor, paz y buena vibra para todos.', chars: '58 caracteres' },
-  { name: 'Sketch Pen', preview: 'Los sueños se hacen realidad con accion.', chars: '76 caracteres' },
+  { name: 'Camilo Arias', role: 'Ingeniero en Sistemas', initials: 'CA', preview: 'Kiru, el mejor sitio para hacer fuentes propias.', chars: '83 caracteres', file: '/fonts/Camilo.ttf', family: 'Camilo', size: '2.4rem' },
+  { name: 'Brenda Aviles', role: 'Psicologa', initials: 'BA', preview: 'The quick brown fox jumps over the lazy dog.', chars: '67 caracteres', file: '/fonts/Brenda.ttf', family: 'Brenda', size: '1.8rem' },
+  { name: 'Andres Tenjo', role: 'Analista', initials: 'AT', preview: 'Querido diario, hoy fue un dia increible.', chars: '72 caracteres', file: '/fonts/Andres.ttf', family: 'Andres', size: '1.8rem' },
 ];
 
 const USECASES = [
@@ -118,6 +115,17 @@ function useScrollReveal() {
 export default function Landing() {
   const navigate = useNavigate();
   const containerRef = useScrollReveal();
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  useEffect(() => {
+    Promise.all(
+      SHOWCASE.map(async (item) => {
+        const font = new FontFace(item.family, `url(${item.file})`);
+        await font.load();
+        document.fonts.add(font);
+      })
+    ).then(() => setFontsLoaded(true));
+  }, []);
 
   const goToApp = () => navigate('/template');
 
@@ -236,9 +244,20 @@ export default function Landing() {
           <div className="showcase-scroll">
             {SHOWCASE.map((item, i) => (
               <div className="showcase-card" key={i}>
-                <span className="showcase-card-name">{item.name}</span>
-                <div className="showcase-card-preview">{item.preview}</div>
-                <span className="showcase-card-meta">{item.chars}</span>
+                <div className="showcase-card-header">
+                  <div className="showcase-card-avatar">{item.initials}</div>
+                  <div className="showcase-card-author">
+                    <span className="showcase-card-name">{item.name}</span>
+                    <span className="showcase-card-role">{item.role}</span>
+                  </div>
+                </div>
+                <div className="showcase-card-divider" />
+                <div
+                  className="showcase-card-preview"
+                  style={fontsLoaded ? { fontFamily: `'${item.family}', serif`, fontSize: item.size } : { fontSize: item.size }}
+                >
+                  {item.preview}
+                </div>
               </div>
             ))}
           </div>
