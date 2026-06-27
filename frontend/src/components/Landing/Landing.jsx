@@ -9,21 +9,21 @@ const STEPS = [
     num: '01',
     label: 'Paso 1',
     title: 'Escribe cada letra',
-    desc: 'Descarga la plantilla, imprimila y escribe cada caracter con un marcador oscuro dentro de las celdas.',
+    desc: 'Descarga la plantilla, imprimela y escribe cada caracter con un marcador oscuro dentro de las celdas.',
     img: '/step-1.png',
   },
   {
     num: '02',
     label: 'Paso 2',
     title: 'Escanea y sube',
-    desc: 'Toma una foto o escanea la plantilla. Subila a la plataforma y ajusta brillo, contraste y rotacion.',
+    desc: 'Toma una foto o escanea la plantilla. Subela a la plataforma y ajusta brillo, contraste y rotacion.',
     img: '/step-2.png',
   },
   {
     num: '03',
     label: 'Paso 3',
-    title: 'Afinar tus letras',
-    desc: 'Revisa los caracteres extraidos, mueve, borra o dibuja para que cada glyph quede perfecto.',
+    title: 'Afina tus letras',
+    desc: 'Revisa los caracteres extraidos, mueve, borra o dibuja para que cada letra quede perfecta.',
     img: '/step-3.png',
   },
   {
@@ -36,8 +36,8 @@ const STEPS = [
 ];
 
 const SHOWCASE = [
-  { name: 'Camilo Arias', role: 'Ingeniero en Sistemas', initials: 'CA', preview: 'Kiru, el mejor sitio para hacer fuentes propias.', chars: '83 caracteres', file: '/fonts/Camilo.ttf', family: 'Camilo', size: '2.4rem' },
-  { name: 'Brenda Aviles', role: 'Psicologa', initials: 'BA', preview: 'The quick brown fox jumps over the lazy dog.', chars: '67 caracteres', file: '/fonts/Brenda.ttf', family: 'Brenda', size: '1.8rem' },
+  { name: 'Camilo Arias', role: 'Ingeniero en Sistemas', initials: 'CA', preview: 'Kiru, el mejor sitio para hacer fuentes.', chars: '83 caracteres', file: '/fonts/Camilo.ttf', family: 'Camilo', size: '2rem' },
+  { name: 'Brenda Aviles', role: 'Psicologa', initials: 'BA', preview: 'Conocerse a uno mismo es el principio de toda sabiduría.', chars: '67 caracteres', file: '/fonts/Brenda.ttf', family: 'Brenda', size: '1.8rem' },
   { name: 'Andres Tenjo', role: 'Analista', initials: 'AT', preview: 'Querido diario, hoy fue un dia increible.', chars: '72 caracteres', file: '/fonts/Andres.ttf', family: 'Andres', size: '1.8rem' },
 ];
 
