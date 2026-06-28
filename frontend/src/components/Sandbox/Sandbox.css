@@ -210,11 +210,29 @@
   cursor: not-allowed;
 }
 
-.sbx-size-slider {
-  width: 100px;
-  height: 4px;
-  accent-color: var(--accent-primary);
-  cursor: pointer;
+.sbx-pad-input {
+  width: 52px;
+  height: 24px;
+  border-radius: var(--radius-sm, 4px);
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+  padding: 0;
+  -moz-appearance: textfield;
+}
+
+.sbx-pad-input::-webkit-outer-spin-button,
+.sbx-pad-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.sbx-pad-input:focus {
+  border-color: var(--accent-primary);
 }
 
 /* --- Editor --- */
@@ -393,7 +411,7 @@
 }
 
 .sbx-guide-card-head--win { color: #0078d4; }
-.sbx-guide-card-head--mac { color: #a2aaad; }
+.sbx-guide-card-head--mac { color: #ffffff; }
 .sbx-guide-card-head--pad { color: #ff69b4; }
 .sbx-guide-card-head--gdoc { color: #4285f4; }
 .sbx-guide-card-head--canva { color: #00c4cc; }

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Bold, Italic, Underline, Palette, Monitor, Cloud, PenTool, Sun, Moon } from 'lucide-react';
+import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Bold, Italic, Underline, Palette, Sun, Moon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
 import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Sandbox.css';
@@ -16,8 +16,10 @@ const SAMPLE_TEXTS = {
 export default function Sandbox() {
   const { fontBytes, fontName, setFontName, templateType, extractedGlyphs, setFontBytes, setStep, reset } = useAppStore();
   const [text, setText] = useState(SAMPLE_TEXTS.pangram);
-  const [fontSize, setFontSize] = useState(32);
+  const [fontSize, setFontSize] = useState(40);
+  const [fontSizeInput, setFontSizeInput] = useState('40');
   const [paddingRatio, setPaddingRatio] = useState(25);
+  const [paddingInput, setPaddingInput] = useState('25');
   const [fontLoaded, setFontLoaded] = useState(false);
   const [isGuideOpen, setIsGuideOpen] = useState(false);
   const [formatState, setFormatState] = useState({ bold: false, italic: false, underline: false });
@@ -27,7 +29,12 @@ export default function Sandbox() {
   const [regenerating, setRegenerating] = useState(false);
   const generationRef = useRef(0);
   const abortRef = useRef(null);
+  const paddingRatioRef = useRef(paddingRatio);
   const previewRef = useRef(null);
+
+  useEffect(() => { paddingRatioRef.current = paddingRatio; }, [paddingRatio]);
+  useEffect(() => { setFontSizeInput(String(fontSize)); }, [fontSize]);
+  useEffect(() => { setPaddingInput(String(paddingRatio)); }, [paddingRatio]);
 
   const updateFormatState = useCallback(() => {
     setFormatState({
@@ -221,20 +228,79 @@ export default function Sandbox() {
             {darkCanvas ? <Sun size={16} /> : <Moon size={16} />}
           </button>
           <div className="sbx-toolbar-sep" />
+
+          {/* Font Size */}
           <Ruler size={14} />
-          <span className="sbx-size-val">{fontSize}px</span>
-          <input type="range" min="14" max="80" value={fontSize} onChange={(e) => setFontSize(Number(e.target.value))} className="sbx-size-slider" />
+          <button
+            className="sbx-pad-btn"
+            onClick={() => setFontSize(Math.max(14, fontSize - 1))}
+            disabled={fontSize <= 14}
+          >−</button>
+          <input
+            type="number"
+            min="14"
+            max="80"
+            step="1"
+            value={fontSizeInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === '') { setFontSizeInput(''); return; }
+              setFontSizeInput(v);
+            }}
+            onBlur={() => {
+              const v = Number(fontSizeInput);
+              const clamped = isNaN(v) ? 14 : Math.max(14, Math.min(80, v));
+              setFontSize(clamped);
+              setFontSizeInput(String(clamped));
+            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+            className="sbx-pad-input"
+          />
+          <button
+            className="sbx-pad-btn"
+            onClick={() => setFontSize(Math.min(80, fontSize + 1))}
+            disabled={fontSize >= 80}
+          >+</button>
+
           <div className="sbx-toolbar-sep" />
+
+          {/* Padding */}
           <span className="sbx-size-label">Espaciado</span>
           <button
             className="sbx-pad-btn"
-            onClick={() => handlePaddingChange(Math.max(0, paddingRatio - 2.5))}
+            onClick={() => {
+              const prev = Math.floor(paddingRatio / 2.5) * 2.5;
+              handlePaddingChange(Math.max(0, prev < paddingRatio ? prev : prev - 2.5));
+            }}
             disabled={paddingRatio <= 0}
           >−</button>
-          <span className="sbx-size-val">{paddingRatio}%</span>
+          <input
+            type="number"
+            min="0"
+            max="80"
+            step="2.5"
+            value={paddingInput}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === '') { setPaddingInput(''); return; }
+              setPaddingInput(v);
+            }}
+            onBlur={() => {
+              const v = Number(paddingInput);
+              const clamped = isNaN(v) ? 0 : Math.max(0, Math.min(80, v));
+              setPaddingRatio(clamped);
+              setPaddingInput(String(clamped));
+              handlePaddingChange(clamped);
+            }}
+            onKeyDown={(e) => { if (e.key === 'Enter') e.target.blur(); }}
+            className="sbx-pad-input"
+          />
           <button
             className="sbx-pad-btn"
-            onClick={() => handlePaddingChange(Math.min(80, paddingRatio + 2.5))}
+            onClick={() => {
+              const next = Math.ceil(paddingRatio / 2.5) * 2.5;
+              handlePaddingChange(Math.min(80, next > paddingRatio ? next : next + 2.5));
+            }}
             disabled={paddingRatio >= 80}
           >+</button>
         </div>
@@ -292,7 +358,7 @@ export default function Sandbox() {
                 {/* Windows */}
                 <div className="sbx-guide-card">
                   <div className="sbx-guide-card-head sbx-guide-card-head--win">
-                    <Monitor size={16} />
+                    <img src="/windows.svg" width="16" height="16" alt="Windows" />
                     <span>Windows</span>
                   </div>
                   <ol className="sbx-guide-steps">
@@ -307,7 +373,7 @@ export default function Sandbox() {
                 {/* macOS */}
                 <div className="sbx-guide-card">
                   <div className="sbx-guide-card-head sbx-guide-card-head--mac">
-                    <svg width="16" height="16" viewBox="0 0 384 512" fill="currentColor"><path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/></svg>
+                    <img src="/apple.svg" width="16" height="16" alt="macOS" />
                     <span>macOS</span>
                   </div>
                   <ol className="sbx-guide-steps">
@@ -321,7 +387,7 @@ export default function Sandbox() {
                 {/* iPad */}
                 <div className="sbx-guide-card">
                   <div className="sbx-guide-card-head sbx-guide-card-head--pad">
-                    <PenTool size={16} />
+                    <img src="/procreate.svg" width="16" height="16" alt="iPad" />
                     <span>iPad (Procreate / GoodNotes)</span>
                   </div>
                   <ol className="sbx-guide-steps">
@@ -334,7 +400,7 @@ export default function Sandbox() {
                 {/* Google Docs */}
                 <div className="sbx-guide-card">
                   <div className="sbx-guide-card-head sbx-guide-card-head--gdoc">
-                    <Cloud size={16} />
+                    <img src="/docs.svg" width="16" height="16" alt="Google Docs" />
                     <span>Google Docs</span>
                   </div>
                   <div className="sbx-guide-note">
@@ -345,16 +411,19 @@ export default function Sandbox() {
                 {/* Canva */}
                 <div className="sbx-guide-card">
                   <div className="sbx-guide-card-head sbx-guide-card-head--canva">
-                    <svg width="16" height="16" viewBox="0 0 48 48"><defs><linearGradient id="canvaGrad" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stopColor="#00c4cc"/><stop offset="100%" stopColor="#7b2ff7"/></linearGradient></defs><circle cx="24" cy="24" r="24" fill="url(#canvaGrad)"/><text x="24" y="24" textAnchor="middle" dominantBaseline="central" fill="white" fontSize="30" fontWeight="700" fontFamily="Arial,sans-serif">C</text></svg>
+                    <img src="/canva.svg" width="16" height="16" alt="Canva" />
                     <span>Canva</span>
                   </div>
+                  <div className="sbx-guide-note">
+                    Se requiere suscripción <strong>Canva Pro</strong> para subir fuentes personalizadas.
+                  </div>
                   <ol className="sbx-guide-steps">
-                    <li>Descargá el archivo <code>.ttf</code> en tu computadora</li>
-                    <li>Abrí Canva y creá un diseño nuevo</li>
-                    <li>Agregá un elemento de <strong>Texto</strong></li>
-                    <li>En el selector de fuentes, escribí el nombre de tu fuente</li>
-                    <li>Si no aparece, subila desde <strong>Subir fuentes</strong> en la pestaña de fuentes</li>
-                    <li>Seleccioná tu fuente y ¡escribí!</li>
+                    <li>Descargá el archivo <code>.ttf</code> y descomprimilo en tu computadora</li>
+                    <li>En Canva, ve al menú lateral izquierdo y hacé clic en <strong>Marca</strong> (o "Más" y luego "Marca")</li>
+                    <li>Desplazate hasta la sección <strong>Fuentes</strong> y hacé clic en el ícono <strong>Añadir (+)</strong></li>
+                    <li>Hacé clic en <strong>Subir una fuente</strong>, elegí el archivo <code>.ttf</code> y pulsá <strong>Abrir</strong></li>
+                    <li>Confirmá los derechos de uso y esperá a que termine de cargarse</li>
+                    <li>Seleccioná tu fuente en cualquier diseño de Canva</li>
                   </ol>
                 </div>
               </div>
