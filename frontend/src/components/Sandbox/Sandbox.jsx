@@ -2,7 +2,6 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, Ruler, BookOpen, Pencil, RefreshCcw, Download, ArrowLeft, Bold, Italic, Underline, Palette, Sun, Moon } from 'lucide-react';
 import useAppStore from '../../store/useAppStore';
-import { TEMPLATE_CONFIGS } from '../../utils/TemplateConfigs';
 import './Sandbox.css';
 
 const SAMPLE_TEXTS = {
@@ -15,7 +14,6 @@ const SAMPLE_TEXTS = {
 
 export default function Sandbox() {
   const { fontBytes, fontName, setFontName, templateType, extractedGlyphs, setFontBytes, setStep, reset } = useAppStore();
-  const [text, setText] = useState(SAMPLE_TEXTS.pangram);
   const [fontSize, setFontSize] = useState(40);
   const [fontSizeInput, setFontSizeInput] = useState('40');
   const [paddingRatio, setPaddingRatio] = useState(25);
@@ -26,15 +24,13 @@ export default function Sandbox() {
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
   const [selectedColor, setSelectedColor] = useState('#ffffff');
   const [darkCanvas, setDarkCanvas] = useState(false);
-  const [regenerating, setRegenerating] = useState(false);
+  const regeneratingRef = useRef(false);
   const generationRef = useRef(0);
   const abortRef = useRef(null);
   const paddingRatioRef = useRef(paddingRatio);
   const previewRef = useRef(null);
 
   useEffect(() => { paddingRatioRef.current = paddingRatio; }, [paddingRatio]);
-  useEffect(() => { setFontSizeInput(String(fontSize)); }, [fontSize]);
-  useEffect(() => { setPaddingInput(String(paddingRatio)); }, [paddingRatio]);
 
   const updateFormatState = useCallback(() => {
     setFormatState({
@@ -52,10 +48,10 @@ export default function Sandbox() {
         await fontFace.load();
         document.fonts.add(fontFace);
         setFontLoaded(true);
-        setRegenerating(false);
+        regeneratingRef.current = false;
       } catch (err) {
         console.error('Error loading font:', err);
-        setRegenerating(false);
+        regeneratingRef.current = false;
       }
     };
     loadFont();
@@ -74,7 +70,7 @@ export default function Sandbox() {
     const controller = new AbortController();
     abortRef.current = controller;
     const gen = ++generationRef.current;
-    setRegenerating(true);
+    regeneratingRef.current = true;
     try {
       const res = await fetch('/api/generate-from-glyphs', {
         method: 'POST',
@@ -94,11 +90,11 @@ export default function Sandbox() {
       setFontBytes(buf);
     } catch (err) {
       if (err.name === 'AbortError') {
-        if (gen === generationRef.current) setRegenerating(false);
+        if (gen === generationRef.current) regeneratingRef.current = false;
         return;
       }
       console.error('Error regenerating font:', err);
-      setRegenerating(false);
+      regeneratingRef.current = false;
     }
   }, [extractedGlyphs, fontName, templateType, setFontBytes]);
 
@@ -129,7 +125,7 @@ export default function Sandbox() {
 
   const handleDownload = async () => {
     if (!extractedGlyphs) return;
-    setRegenerating(true);
+    regeneratingRef.current = true;
     try {
       const res = await fetch('/api/generate-from-glyphs', {
         method: 'POST',
@@ -155,7 +151,7 @@ export default function Sandbox() {
     } catch (err) {
       console.error('Error downloading:', err);
     } finally {
-      setRegenerating(false);
+      regeneratingRef.current = false;
     }
   };
 
@@ -254,7 +250,7 @@ export default function Sandbox() {
           <Ruler size={14} />
           <button
             className="sbx-pad-btn"
-            onClick={() => setFontSize(Math.max(14, fontSize - 1))}
+            onClick={() => { const v = Math.max(14, fontSize - 1); setFontSize(v); setFontSizeInput(String(v)); }}
             disabled={fontSize <= 14}
           >−</button>
           <input
@@ -279,7 +275,7 @@ export default function Sandbox() {
           />
           <button
             className="sbx-pad-btn"
-            onClick={() => setFontSize(Math.min(80, fontSize + 1))}
+            onClick={() => { const v = Math.min(80, fontSize + 1); setFontSize(v); setFontSizeInput(String(v)); }}
             disabled={fontSize >= 80}
           >+</button>
 
@@ -291,7 +287,9 @@ export default function Sandbox() {
             className="sbx-pad-btn"
             onClick={() => {
               const prev = Math.floor(paddingRatio / 2.5) * 2.5;
-              handlePaddingChange(Math.max(0, prev < paddingRatio ? prev : prev - 2.5));
+              const v = Math.max(0, prev < paddingRatio ? prev : prev - 2.5);
+              setPaddingInput(String(v));
+              handlePaddingChange(v);
             }}
             disabled={paddingRatio <= 0}
           >−</button>
@@ -320,7 +318,9 @@ export default function Sandbox() {
             className="sbx-pad-btn"
             onClick={() => {
               const next = Math.ceil(paddingRatio / 2.5) * 2.5;
-              handlePaddingChange(Math.min(80, next > paddingRatio ? next : next + 2.5));
+              const v = Math.min(80, next > paddingRatio ? next : next + 2.5);
+              setPaddingInput(String(v));
+              handlePaddingChange(v);
             }}
             disabled={paddingRatio >= 80}
           >+</button>
