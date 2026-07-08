@@ -179,6 +179,8 @@ export default function Editor() {
 
     if (activeTool === 'move') {
       e.preventDefault();
+      dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
+      dragStartOffsetRef.current = { x: offsetRef.current.x, y: offsetRef.current.y };
       const canvas = canvasRef.current;
       if (canvas) {
         const snap = document.createElement('canvas');
@@ -187,8 +189,6 @@ export default function Editor() {
         snap.getContext('2d').drawImage(canvas, 0, 0);
         moveSnapshotRef.current = snap;
       }
-      dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
-      dragStartOffsetRef.current = { x: offsetRef.current.x, y: offsetRef.current.y };
       setIsDragging(true);
     }
 
@@ -218,7 +218,10 @@ export default function Editor() {
       };
       offsetRef.current = newOff;
       setOffset(newOff);
-      renderCanvas(moveSnapshotRef.current, newOff, scaleRef.current);
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+      ctx.drawImage(moveSnapshotRef.current, dx, dy);
     }
 
     if (isDrawing && (activeTool === 'erase' || activeTool === 'draw')) {
@@ -226,7 +229,7 @@ export default function Editor() {
       const y = ((e.clientY - rect.top) / rect.height) * CANVAS_SIZE;
       paintAt(x, y);
     }
-  }, [isDragging, isDrawing, activeTool, paintAt, renderCanvas]);
+  }, [isDragging, isDrawing, activeTool, paintAt]);
 
   const handleMouseUp = useCallback(() => {
     const wasDrawing = isDrawing;
