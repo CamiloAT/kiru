@@ -127,15 +127,36 @@ export default function Sandbox() {
     }
   };
 
-  const handleDownload = () => {
-    if (!fontBytes) return;
-    const blob = new Blob([fontBytes], { type: 'font/ttf' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${fontName || 'MiLetra'}.ttf`;
-    link.click();
-    URL.revokeObjectURL(url);
+  const handleDownload = async () => {
+    if (!extractedGlyphs) return;
+    setRegenerating(true);
+    try {
+      const res = await fetch('/api/generate-from-glyphs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          glyphs: extractedGlyphs,
+          font_name: fontName || 'MiLetra',
+          template_type: templateType || 'full',
+          smooth: true,
+          padding_ratio: paddingRatio / 100,
+        }),
+      });
+      if (!res.ok) throw new Error('Error al generar fuente');
+      const buf = await res.arrayBuffer();
+      setFontBytes(buf);
+      const blob = new Blob([buf], { type: 'font/ttf' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${fontName || 'MiLetra'}.ttf`;
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Error downloading:', err);
+    } finally {
+      setRegenerating(false);
+    }
   };
 
   if (!fontBytes) {
