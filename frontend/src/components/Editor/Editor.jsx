@@ -85,7 +85,7 @@ export default function Editor() {
     const img = new Image();
     img.onload = () => {
       glyphImageRef.current = img;
-      const fitScale = Math.min(CANVAS_SIZE / img.width, CANVAS_SIZE / img.height) * 0.85;
+      const fitScale = Math.min(CANVAS_SIZE / img.width, CANVAS_SIZE / img.height);
       setOffset({ x: 0, y: 0 });
       setScale(fitScale);
       scaleRef.current = fitScale;
@@ -133,10 +133,14 @@ export default function Editor() {
     ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
     const drawW = img.width * sc;
     const drawH = img.height * sc;
-    const x = (CANVAS_SIZE - drawW) / 2 + off.x;
-    const baselineTarget = CANVAS_SIZE * 0.75;
-    const baselineInImage = img.height * 0.775;
-    const y = baselineTarget - baselineInImage * sc + off.y;
+    let x, y;
+    if (img.width === CANVAS_SIZE && img.height === CANVAS_SIZE) {
+      x = off.x;
+      y = off.y;
+    } else {
+      x = (CANVAS_SIZE - drawW) / 2 + off.x;
+      y = CANVAS_SIZE * 0.75 - img.height * 0.775 * sc + off.y;
+    }
     ctx.drawImage(img, x, y, drawW, drawH);
   }, []);
 
@@ -245,7 +249,7 @@ export default function Editor() {
   // ===== RESET =====
   const resetCanvas = () => {
     if (glyphImageRef.current) {
-      const fitScale = Math.min(CANVAS_SIZE / glyphImageRef.current.width, CANVAS_SIZE / glyphImageRef.current.height) * 0.85;
+      const fitScale = Math.min(CANVAS_SIZE / glyphImageRef.current.width, CANVAS_SIZE / glyphImageRef.current.height);
       setOffset({ x: 0, y: 0 });
       setScale(fitScale);
       scaleRef.current = fitScale;
