@@ -15,7 +15,7 @@ const TOOLS = [
 const CANVAS_SIZE = 240;
 
 export default function Editor() {
-  const { templateType, extractedGlyphs, updateExtractedGlyph, setStep, fontName, setFontBytes, isGenerating, setGenerating } = useAppStore();
+  const { templateType, extractedGlyphs, updateExtractedGlyph, setStep, setFontBytes, isGenerating, setGenerating } = useAppStore();
   const [selectedChar, setSelectedChar] = useState(null);
   const [activeTool, setActiveTool] = useState('move');
   const [brushSize, setBrushSize] = useState(20);
@@ -23,7 +23,6 @@ export default function Editor() {
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [isDrawing, setIsDrawing] = useState(false);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
   const [showCursor, setShowCursor] = useState(false);
@@ -32,9 +31,11 @@ export default function Editor() {
 
   const canvasRef = useRef(null);
   const glyphImageRef = useRef(null);
-  const dragOffsetRef = useRef({ x: 0, y: 0 });
   const scaleRef = useRef(1);
   const canvasScaleRef = useRef(1);
+  const dragStartScreenRef = useRef({ x: 0, y: 0 });
+  const dragStartOffsetRef = useRef({ x: 0, y: 0 });
+  const offsetRef = useRef(offset);
   const moveSnapshotRef = useRef(null);
   const historyRef = useRef([]);
   const historyIndexRef = useRef(-1);
@@ -75,9 +76,48 @@ export default function Editor() {
     if (historyIndexRef.current < historyRef.current.length - 1) restoreFromHistory(historyIndexRef.current + 1);
   }, [restoreFromHistory]);
 
+  const renderCanvas = useCallback((img, off, sc) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !img) return;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
+    const drawW = img.width * sc;
+    const drawH = img.height * sc;
+    let x, y;
+    if (img.width === CANVAS_SIZE && img.height === CANVAS_SIZE) {
+      x = off.x;
+      y = off.y;
+    } else {
+      x = (CANVAS_SIZE - drawW) / 2 + off.x;
+      y = CANVAS_SIZE * 0.75 - img.height * 0.775 * sc + off.y;
+    }
+    ctx.drawImage(img, x, y, drawW, drawH);
+  }, []);
+
+  const paintAt = useCallback((x, y) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const size = brushSizeRef.current;
+    ctx.save();
+    if (activeTool === 'erase') {
+      ctx.globalCompositeOperation = 'destination-out';
+      ctx.fillStyle = 'rgba(0,0,0,1)';
+    } else {
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = '#000000';
+    }
+    ctx.beginPath();
+    ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  }, [activeTool]);
+
+  const glyphData = selectedChar ? extractedGlyphs?.[selectedChar] : null;
+
   // Load glyph image when selected char changes
   useEffect(() => {
-    if (!selectedChar || !extractedGlyphs?.[selectedChar]) {
+    if (!selectedChar || !glyphData) {
       glyphImageRef.current = null;
       return;
     }
@@ -86,18 +126,17 @@ export default function Editor() {
     img.onload = () => {
       glyphImageRef.current = img;
       const fitScale = Math.min(CANVAS_SIZE / img.width, CANVAS_SIZE / img.height);
+      offsetRef.current = { x: 0, y: 0 };
       setOffset({ x: 0, y: 0 });
       setScale(fitScale);
       scaleRef.current = fitScale;
-      dragOffsetRef.current = { x: 0, y: 0 };
-      moveSnapshotRef.current = null;
       renderCanvas(img, { x: 0, y: 0 }, fitScale);
       historyRef.current = [];
       historyIndexRef.current = -1;
       saveToHistory();
     };
-    img.src = extractedGlyphs[selectedChar];
-  }, [selectedChar, extractedGlyphs]);
+    img.src = glyphData;
+  }, [selectedChar, glyphData, renderCanvas, saveToHistory]);
 
   // Track canvas display size to scale cursor correctly
   useEffect(() => {
@@ -126,24 +165,6 @@ export default function Editor() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [selectedChar, undo, redo]);
 
-  const renderCanvas = useCallback((img, off, sc) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !img) return;
-    const ctx = canvas.getContext('2d');
-    ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-    const drawW = img.width * sc;
-    const drawH = img.height * sc;
-    let x, y;
-    if (img.width === CANVAS_SIZE && img.height === CANVAS_SIZE) {
-      x = off.x;
-      y = off.y;
-    } else {
-      x = (CANVAS_SIZE - drawW) / 2 + off.x;
-      y = CANVAS_SIZE * 0.75 - img.height * 0.775 * sc + off.y;
-    }
-    ctx.drawImage(img, x, y, drawW, drawH);
-  }, []);
-
   const openModal = (char) => {
     setSelectedChar(char);
     setActiveTool('move');
@@ -159,16 +180,16 @@ export default function Editor() {
     if (activeTool === 'move') {
       e.preventDefault();
       const canvas = canvasRef.current;
-      const snap = document.createElement('canvas');
-      snap.width = CANVAS_SIZE;
-      snap.height = CANVAS_SIZE;
-      snap.getContext('2d').drawImage(canvas, 0, 0);
-      moveSnapshotRef.current = snap;
+      if (canvas) {
+        const snap = document.createElement('canvas');
+        snap.width = CANVAS_SIZE;
+        snap.height = CANVAS_SIZE;
+        snap.getContext('2d').drawImage(canvas, 0, 0);
+        moveSnapshotRef.current = snap;
+      }
+      dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
+      dragStartOffsetRef.current = { x: offsetRef.current.x, y: offsetRef.current.y };
       setIsDragging(true);
-      setDragStart({
-        x: e.clientX - dragOffsetRef.current.x,
-        y: e.clientY - dragOffsetRef.current.y,
-      });
     }
 
     if (activeTool === 'erase' || activeTool === 'draw') {
@@ -178,7 +199,7 @@ export default function Editor() {
       const y = ((e.clientY - rect.top) / rect.height) * CANVAS_SIZE;
       paintAt(x, y);
     }
-  }, [activeTool, selectedChar]);
+  }, [activeTool, selectedChar, paintAt]);
 
   const handleMouseMove = useCallback((e) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -189,16 +210,15 @@ export default function Editor() {
     }
 
     if (isDragging && activeTool === 'move' && moveSnapshotRef.current) {
+      const dx = (e.clientX - dragStartScreenRef.current.x) / canvasScaleRef.current;
+      const dy = (e.clientY - dragStartScreenRef.current.y) / canvasScaleRef.current;
       const newOff = {
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
+        x: dragStartOffsetRef.current.x + dx,
+        y: dragStartOffsetRef.current.y + dy,
       };
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, CANVAS_SIZE, CANVAS_SIZE);
-      ctx.drawImage(moveSnapshotRef.current, newOff.x, newOff.y);
-      dragOffsetRef.current = newOff;
+      offsetRef.current = newOff;
       setOffset(newOff);
+      renderCanvas(moveSnapshotRef.current, newOff, scaleRef.current);
     }
 
     if (isDrawing && (activeTool === 'erase' || activeTool === 'draw')) {
@@ -206,7 +226,7 @@ export default function Editor() {
       const y = ((e.clientY - rect.top) / rect.height) * CANVAS_SIZE;
       paintAt(x, y);
     }
-  }, [isDragging, isDrawing, activeTool, dragStart]);
+  }, [isDragging, isDrawing, activeTool, paintAt, renderCanvas]);
 
   const handleMouseUp = useCallback(() => {
     const wasDrawing = isDrawing;
@@ -217,43 +237,42 @@ export default function Editor() {
     if (wasDrawing || wasDragging) saveToHistory();
   }, [isDrawing, isDragging, saveToHistory]);
 
-  const paintAt = (x, y) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const size = brushSizeRef.current;
-    ctx.save();
-    if (activeTool === 'erase') {
-      ctx.globalCompositeOperation = 'destination-out';
-      ctx.fillStyle = 'rgba(0,0,0,1)';
-    } else {
-      ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = '#000000';
-    }
-    ctx.beginPath();
-    ctx.arc(x, y, size / 2, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.restore();
-  };
-
   // ===== SCALE =====
   const handleScaleChange = (newScale) => {
+    if (!glyphImageRef.current) return;
+    const img = glyphImageRef.current;
+    const oldSc = scaleRef.current;
+
+    let newOff;
+    if (img.width === CANVAS_SIZE && img.height === CANVAS_SIZE) {
+      const anchorY = 180;
+      const anchorX = CANVAS_SIZE / 2;
+      const py = (anchorY - offset.y) / oldSc;
+      const px = (anchorX - offset.x) / oldSc;
+      newOff = {
+        x: anchorX - px * newScale,
+        y: anchorY - py * newScale,
+      };
+    } else {
+      newOff = { x: offset.x, y: offset.y };
+    }
+
     setScale(newScale);
     scaleRef.current = newScale;
-    if (glyphImageRef.current) {
-      renderCanvas(glyphImageRef.current, offset, newScale);
-      saveToHistory();
-    }
+    offsetRef.current = newOff;
+    setOffset(newOff);
+    renderCanvas(img, newOff, newScale);
+    saveToHistory();
   };
 
   // ===== RESET =====
   const resetCanvas = () => {
     if (glyphImageRef.current) {
       const fitScale = Math.min(CANVAS_SIZE / glyphImageRef.current.width, CANVAS_SIZE / glyphImageRef.current.height);
+      offsetRef.current = { x: 0, y: 0 };
       setOffset({ x: 0, y: 0 });
       setScale(fitScale);
       scaleRef.current = fitScale;
-      dragOffsetRef.current = { x: 0, y: 0 };
       renderCanvas(glyphImageRef.current, { x: 0, y: 0 }, fitScale);
       saveToHistory();
     }
@@ -285,16 +304,19 @@ export default function Editor() {
 
   // ===== GENERATE FONT =====
   const handleGenerateFont = async () => {
-    if (!extractedGlyphs || Object.keys(extractedGlyphs).length === 0) return;
+    const latestGlyphs = useAppStore.getState().extractedGlyphs;
+    const latestFontName = useAppStore.getState().fontName;
+    const latestTemplateType = useAppStore.getState().templateType;
+    if (!latestGlyphs || Object.keys(latestGlyphs).length === 0) return;
     setGenerating(true);
     try {
       const response = await fetch('/api/generate-from-glyphs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          glyphs: extractedGlyphs,
-          font_name: fontName || 'MiLetra',
-          template_type: templateType,
+          glyphs: latestGlyphs,
+          font_name: latestFontName || 'MiLetra',
+          template_type: latestTemplateType,
           smooth: true,
         }),
       });

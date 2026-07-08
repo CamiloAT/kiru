@@ -200,9 +200,12 @@ async def generate_from_glyphs(request: GenerateFromGlyphsRequest):
         if not request.glyphs:
             raise HTTPException(status_code=400, detail="No se enviaron glyphs")
 
-        # Cache key: hash of all glyph data
-        raw = "".join(f"{k}:{v[:50]}" for k, v in sorted(request.glyphs.items()))
-        cache_key = hashlib.md5(raw.encode()).hexdigest()
+        # Cache key: hash of all glyph data (use full data to avoid collisions)
+        h = hashlib.md5()
+        for k, v in sorted(request.glyphs.items()):
+            h.update(f"{k}:".encode())
+            h.update(v.encode())
+        cache_key = h.hexdigest()
 
         if cache_key in _vectorize_cache:
             vectorized = _vectorize_cache[cache_key]
